@@ -5,6 +5,7 @@ import math
 class CHESSBOARD:
     x1 = -1
     y1 = -1
+    loc = ""
     color1 = "#706677"
     color2 = "#ccb7ae"
     highlight = "#eefaac"
@@ -18,7 +19,7 @@ class CHESSBOARD:
         self.canvas = tk.Canvas(parent, width=canvas_width, height=canvas_height)
         self.canvas.pack(padx=8, pady=8)
         self.draw_board()
-        #self.canvas.bind("<Button-1>", self.square_clicked)
+
 
     def draw_board(self):
         intCheck = 0
@@ -47,7 +48,7 @@ def motion(event, chessboard):
     overChar = chr(over)
     chessboard.canvas.delete("hlight")
     if x > 0 and x <= 512 and y > 0 and y <= 512:
-        loc = str(overChar) + str(down)
+        chessboard.loc = str(overChar) + str(down)
         #print(over - 64,abs(down-9))
         #print(loc)
         CHESSBOARD.x1 = over-64
@@ -55,8 +56,6 @@ def motion(event, chessboard):
         chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +3, ((chessboard.y1) * 64) + 36, 
             ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
             fill = "#eefaac", tag = "hlight")
-        return over - 64, abs(down-9), loc
-    return -999, -999, -999
 
 def highlight(event, chessboard):
     chessboard.canvas.create_rectangle(chessboard.x1 +2, chessboard.y1 + 100, chessboard.x1 + chessboard.dim_square, chessboard.y1 + chessboard.dim_square, fill = "#eefaac")
