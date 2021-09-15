@@ -31,32 +31,27 @@ class CHESSBOARD:
                 y2 = y1 + self.dim_square
                 self.canvas.create_rectangle(x1, y1, x2, y2,
                                                 fill=self.checkerboard_color(intCheck),
-                                                tags="area")
+                                                tags="board")
                 intCheck += 1
 
     def checkerboard_color(self, intCheck):
         if intCheck % 2 == 0:
             return self.color1
         else:
-            return self.color2
-
-    #def locToCoords(self, loc):
-        
+            return self.color2      
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
     over = math.ceil(x/64)+64 
     down = abs(math.ceil(y/64) - 9)
     overChar = chr(over)
+    chessboard.canvas.delete("hlight")
     if x > 0 and x <= 512 and y > 0 and y <= 512:
         loc = str(overChar) + str(down)
         #print(over - 64,abs(down-9))
         #print(loc)
-        #CHESSBOARD.self.canvas.create_rectangle(1,1, 10, 10, fill=CHESSBOARD.highlight)
         CHESSBOARD.x1 = over-64
         CHESSBOARD.y1 = abs(down-9)
-        print(CHESSBOARD.x1)
-        chessboard.canvas.delete("hlight")
         chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +3, ((chessboard.y1) * 64) + 36, 
             ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
             fill = "#eefaac", tag = "hlight")
@@ -73,10 +68,7 @@ def main():
     icon = PhotoImage(file="./icons/mainIcon.png")
     root.iconphoto(False, icon)
     root.resizable(False, False)
-    #root.bind('<Motion>', motion)
     root.bind("<Motion>", lambda event: motion(event, chessboard))
-    #highlight('<Motion>', chessboard)
-    #chessboard.canvas.create_rectangle(chessboard.x1 +2, chessboard.y1 + 100, chessboard.x1 + chessboard.dim_square, chessboard.y1 + chessboard.dim_square, fill = "#eefaac")
     root.mainloop()
 
 if __name__ == "__main__":
