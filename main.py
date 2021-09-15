@@ -3,6 +3,8 @@ import tkinter as tk
 import math
 
 class CHESSBOARD:
+    x1 = -1
+    y1 = -1
     color1 = "#706677"
     color2 = "#ccb7ae"
     highlight = "#eefaac"
@@ -41,16 +43,28 @@ class CHESSBOARD:
     #def locToCoords(self, loc):
         
 
-def motion(event):
+def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
     over = math.ceil(x/64)+64 
     down = abs(math.ceil(y/64) - 9)
     overChar = chr(over)
     if x > 0 and x <= 512 and y > 0 and y <= 512:
         loc = str(overChar) + str(down)
-        #print(over - 64,down)
-        print(loc)
-        return over - 64, down, loc
+        #print(over - 64,abs(down-9))
+        #print(loc)
+        #CHESSBOARD.self.canvas.create_rectangle(1,1, 10, 10, fill=CHESSBOARD.highlight)
+        CHESSBOARD.x1 = over-64
+        CHESSBOARD.y1 = abs(down-9)
+        print(CHESSBOARD.x1)
+        chessboard.canvas.delete("hlight")
+        chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +3, ((chessboard.y1) * 64) + 36, 
+            ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
+            fill = "#eefaac", tag = "hlight")
+        return over - 64, abs(down-9), loc
+    return -999, -999, -999
+
+def highlight(event, chessboard):
+    chessboard.canvas.create_rectangle(chessboard.x1 +2, chessboard.y1 + 100, chessboard.x1 + chessboard.dim_square, chessboard.y1 + chessboard.dim_square, fill = "#eefaac")
 
 def main():
     root = tk.Tk()
@@ -59,7 +73,10 @@ def main():
     icon = PhotoImage(file="./icons/mainIcon.png")
     root.iconphoto(False, icon)
     root.resizable(False, False)
-    root.bind('<Motion>', motion)
+    #root.bind('<Motion>', motion)
+    root.bind("<Motion>", lambda event: motion(event, chessboard))
+    #highlight('<Motion>', chessboard)
+    #chessboard.canvas.create_rectangle(chessboard.x1 +2, chessboard.y1 + 100, chessboard.x1 + chessboard.dim_square, chessboard.y1 + chessboard.dim_square, fill = "#eefaac")
     root.mainloop()
 
 if __name__ == "__main__":
