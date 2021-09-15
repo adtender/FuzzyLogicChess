@@ -19,7 +19,7 @@ class CHESSBOARD:
         self.canvas = tk.Canvas(parent, width=canvas_width, height=canvas_height)
         self.canvas.pack(padx=8, pady=8)
         self.draw_board()
-
+        self.add_pieces()
 
     def draw_board(self):
         intCheck = 0
@@ -42,7 +42,19 @@ class CHESSBOARD:
             return self.color2
 
     def add_pieces(self):
-        
+        self.bb = PhotoImage(file="./icons/bb.png")
+        self.bk = PhotoImage(file="./icons/bk.png")
+        self.bkn = PhotoImage(file="./icons/bkn.png")
+        self.bp = PhotoImage(file="./icons/bp.png")
+        self.bq = PhotoImage(file="./icons/bq.png")
+        self.br = PhotoImage(file="./icons/br.png")
+        self.wb = PhotoImage(file="./icons/wb.png")
+        self.wk = PhotoImage(file="./icons/wk.png")
+        self.wkn = PhotoImage(file="./icons/wkn.png")
+        self.wp = PhotoImage(file="./icons/wp.png")
+        self.wq = PhotoImage(file="./icons/wq.png")
+        self.wr = PhotoImage(file='./icons/wr.png')
+        self.canvas.create_image(32, 132, image=self.wr, anchor="center")
         return
 
 def motion(event, chessboard):
@@ -57,7 +69,7 @@ def motion(event, chessboard):
         #print(loc)
         CHESSBOARD.x1 = over-64
         CHESSBOARD.y1 = abs(down-9)
-        chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +3, ((chessboard.y1) * 64) + 36, 
+        chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
             ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
             fill = "#eefaac", tag = "hlight")
 
