@@ -2,8 +2,8 @@ from tkinter import *
 import tkinter as tk
 
 class CHESSBOARD:
-    color1 = "#adede4"
-    color2 = "#e8ebea"
+    color1 = "#706677"
+    color2 = "#ccb7ae"
     highlight = "#77db69"
     rows = 8
     columns = 8
@@ -17,17 +17,25 @@ class CHESSBOARD:
         self.draw_board()
 
     def draw_board(self):
-        color = self.color2
+        intCheck = 0
         for row in range(self.rows):
-            color = self.color1 if color == self.color2 else self.color2
+            intCheck += 1
             for col in range(self.columns):
-                x1 = (col * self.dim_square)+2
-                y1 = ((7 - row) * self.dim_square) + 100
+                x1 = (col * self.dim_square) + 2
+                y1 = ((row) * self.dim_square) + 100
                 x2 = x1 + self.dim_square
                 y2 = y1 + self.dim_square
-                self.canvas.create_rectangle(x1, y1, x2, y2, fill=color,
-                                                 tags="area")
-                color = self.color1 if color == self.color2 else self.color2
+                self.canvas.create_rectangle(x1, y1, x2, y2,
+                                                fill=self.checkerboard_color(intCheck),
+                                                tags="area")
+                intCheck += 1
+
+
+    def checkerboard_color(self, intCheck):
+        if intCheck % 2 == 0:
+            return self.color1
+        else:
+            return self.color2
 
 def main():
     root = tk.Tk()
