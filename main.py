@@ -39,7 +39,11 @@ class CHESSBOARD:
         if intCheck % 2 == 0:
             return self.color1
         else:
-            return self.color2      
+            return self.color2
+
+    def add_pieces(self):
+        
+        return
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
@@ -56,9 +60,6 @@ def motion(event, chessboard):
         chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +3, ((chessboard.y1) * 64) + 36, 
             ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
             fill = "#eefaac", tag = "hlight")
-
-def highlight(event, chessboard):
-    chessboard.canvas.create_rectangle(chessboard.x1 +2, chessboard.y1 + 100, chessboard.x1 + chessboard.dim_square, chessboard.y1 + chessboard.dim_square, fill = "#eefaac")
 
 def main():
     root = tk.Tk()
