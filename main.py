@@ -54,7 +54,7 @@ class CHESSBOARD:
         self.wp = PhotoImage(file="./icons/wp.png")
         self.wq = PhotoImage(file="./icons/wq.png")
         self.wr = PhotoImage(file='./icons/wr.png')
-        self.canvas.create_image(32, 132, image=self.wr, anchor="center")
+        self.canvas.create_image(32, 132, image=self.wr, anchor="center", tag="piece")
         return
 
 def motion(event, chessboard):
@@ -72,6 +72,8 @@ def motion(event, chessboard):
         chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
             ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
             fill = "#eefaac", tag = "hlight")
+        chessboard.canvas.tag_raise("piece")
+        #chessboard.canvas.tag_lower("hlight")
 
 def main():
     root = tk.Tk()
