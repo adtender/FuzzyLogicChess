@@ -111,6 +111,7 @@ class CHESSBOARD:
         self.add_piece(self.wp, lwp6)
         self.add_piece(self.wp, lwp7)
         self.add_piece(self.wp, lwp8)
+
     def add_piece(self, img, location):
 
         posx = int(location[0])
@@ -119,7 +120,6 @@ class CHESSBOARD:
         offset_y = 132
         self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
             image=img, anchor="center", tag="piece")
-        return
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
@@ -130,7 +130,7 @@ def motion(event, chessboard):
     if x > 0 and x <= 512 and y > 0 and y <= 512:
         chessboard.loc = str(overChar) + str(down)
         #print(over - 64,abs(down-9))
-        #print(loc)
+        print(chessboard.loc)
         CHESSBOARD.x1 = over-64
         CHESSBOARD.y1 = abs(down-9)
         chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
