@@ -8,7 +8,6 @@ class CHESSBOARD:
     loc = ""
     color1 = "#706677"
     color2 = "#ccb7ae"
-    highlight = "#eefaac"
     rows = 8
     columns = 8
     dim_square = 64
