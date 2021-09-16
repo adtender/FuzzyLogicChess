@@ -122,6 +122,9 @@ class CHESSBOARD:
         self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
             image=img, anchor="center", tag="piece")
 
+    def piece_logic(self):
+        return
+
 def on_click(event, chessboard):
     x, y = event.x - 2, event.y - 100
     if x > 0 and x <= 512 and y > 0 and y <= 512:
