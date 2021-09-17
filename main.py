@@ -116,24 +116,55 @@ class CHESSBOARD:
     def add_piece(self, img, location, piece):
         posx = int(location[0])
         posy = int(location[1])
-        self.board[posy][posx] = piece
+        self.board[posx][posy] = piece
         offset_x = 32
         offset_y = 132
         self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
             image=img, anchor="center", tag="piece")
 
-    def piece_logic(self):
+    def highlight_green(self, x, y):
+        #self.canvas.delete("move_locations")
+        self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
+            ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
+            fill = "#4bc96c", tag = "move_locations")
+    
+    def piece_logic(self, piece, x, y):
+        if(piece=="bp"):
+            if(y<8):
+                self.highlight_green(x-1, y+1)
+                self.highlight_green(x, y+1)
+                if(x<8):
+                    self.highlight_green(x+1, y+1)
+
+        if(piece=="wp"):
+            if(y<8):
+                self.highlight_green(x-1, y-1)
+                self.highlight_green(x, y-1)
+                if(x<8):
+                    self.highlight_green(x+1, y-1)
+
         return
+
+    def piece_check(self):
+        self.canvas.delete("move_locations")
+        if (self.board[self.x1][self.y1] != ""):
+            self.canvas.delete("piece_selected")
+            self.canvas.create_rectangle(((self.x1 - 1) * 64) +4, ((self.y1) * 64) + 37, 
+                ((self.x1 - 1) * 64) + self.dim_square, (self.y1 * 64) + self.dim_square + 35, 
+                fill = "#eefaac", tag = "piece_selected")
+            self.piece_logic(self.board[self.x1][self.y1], self.x1, self.y1)
+            #print(self.board[self.x1][self.y1])
 
 def on_click(event, chessboard):
     x, y = event.x - 2, event.y - 100
     if x > 0 and x <= 512 and y > 0 and y <= 512:
-        chessboard.canvas.delete("move_locations")
-        chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
-        ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
-        fill = "#4bc96c", tag = "move_locations")
+        #chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
+        #    ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
+        #    fill = "#4bc96c", tag = "move_locations")
+        
+        chessboard.piece_check()
         chessboard.canvas.tag_raise("piece")
-        print(chessboard.board)
+        #print(chessboard.board)
     return
 
 def motion(event, chessboard):
@@ -156,7 +187,7 @@ def motion(event, chessboard):
 
 def main():
     root = tk.Tk()
-    root.title('Chess Game')
+    root.title('Fuzzy-Logic Medieval Chess')
     chessboard = CHESSBOARD(root)
     icon = PhotoImage(file="./icons/mainIcon.png")
     root.iconphoto(False, icon)
