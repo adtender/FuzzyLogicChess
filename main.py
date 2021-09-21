@@ -21,6 +21,9 @@ class CHESSBOARD:
     side_offset = 100
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
+    dice_val = ""
+    fake_roll_val = 5
+    fake_roll_time_interval = 200
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -191,10 +194,38 @@ class CHESSBOARD:
         self.vMove.append(str(x)+str(y))
         #print(self.vMove)
 
+    def roll_value(self):
+        self.dice_val = random.randrange(1,6)
+        #print(self.dice_val)
+        return self.dice_val
+
     def show_dice(self):
-        dice1 = ImageTk.PhotoImage(Image.open("icons/bb.png").resize((64, 64), Image.ANTIALIAS))
-        self.canvas.create_image(10, 10, image=dice1 , tag="dice")
-        return
+        self.dice1 = ImageTk.PhotoImage(Image.open("icons/dice1.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice2 = ImageTk.PhotoImage(Image.open("icons/dice2.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice3 = ImageTk.PhotoImage(Image.open("icons/dice3.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice4 = ImageTk.PhotoImage(Image.open("icons/dice4.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice5 = ImageTk.PhotoImage(Image.open("icons/dice5.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice6 = ImageTk.PhotoImage(Image.open("icons/dice6.png").resize((64, 64), Image.ANTIALIAS))
+
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
+
+        for roll in range(0, self.fake_roll_val):
+            print(roll)
+            self.roll_value()
+            print(self.dice_val)
+            if self.dice_val == 1:
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
+            elif self.dice_val == 2:
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice2 , tag="dice")
+            elif self.dice_val == 3:
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice3 , tag="dice")
+            elif self.dice_val == 4:
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice")
+            elif self.dice_val == 5:
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice")
+            elif self.dice_val == 6:
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
+        
 
 def on_right_click(event, chessboard):
     piece = chessboard.board[chessboard.x1][chessboard.y1]
