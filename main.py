@@ -2,6 +2,8 @@ from tkinter import *
 import tkinter as tk
 import numpy as np
 import math
+import random
+from PIL import ImageTk, Image
 
 class CHESSBOARD:
     board = np.empty((9,9), dtype="<U10")
@@ -15,14 +17,20 @@ class CHESSBOARD:
     rows = 8
     columns = 8
     dim_square = 64
+    top_offset = 200
+    side_offset = 100
+    width = columns * dim_square + side_offset
+    height = rows * dim_square + top_offset
 
     def __init__(self, parent):
-        canvas_width = self.columns * self.dim_square + 100
-        canvas_height = self.rows * self.dim_square + 200
+        canvas_width = self.width
+        canvas_height = self.height
         self.canvas = tk.Canvas(parent, width=canvas_width, height=canvas_height)
         self.canvas.pack(padx=8, pady=8)
         self.draw_board()
         self.pieces()
+        self.show_dice()
+
 
     def draw_board(self):
         intCheck = 0
@@ -182,6 +190,11 @@ class CHESSBOARD:
         self.vMove[0] = piece
         self.vMove.append(str(x)+str(y))
         #print(self.vMove)
+
+    def show_dice(self):
+        dice1 = ImageTk.PhotoImage(Image.open("icons/bb.png").resize((64, 64), Image.ANTIALIAS))
+        self.canvas.create_image(10, 10, image=dice1 , tag="dice")
+        return
 
 def on_right_click(event, chessboard):
     piece = chessboard.board[chessboard.x1][chessboard.y1]
