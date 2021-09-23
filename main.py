@@ -178,7 +178,7 @@ class CHESSBOARD:
     def rule_set(self):
         if(self.selected_piece[0][:-1] == "bp"):
             if(int(self.selected_piece[0][2]) <= 3):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 1] #distance can travel, team, piece, core
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 1] #distance can travel, team, piece, corps
             if(int(self.selected_piece[0][2]) == 4 or int(self.selected_piece[0][2]) == 5):
                 return [1, self.selected_piece[0][0], self.selected_piece[0][1], 2]
             if(int(self.selected_piece[0][2]) >= 6):
@@ -235,8 +235,6 @@ class CHESSBOARD:
 
         if(self.selected_piece[0] == "wk"):
             return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
-            
-        return
 
     def valid_moves(self, ):
         return
@@ -257,8 +255,7 @@ def on_click(event, chessboard):
                 ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
                 fill = chessboard.color3, tag = "piece_selected")
             chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)]
-            dist = chessboard.rule_set()
-            print(dist)
+            dist = chessboard.rule_set() #gather distance can move, team, piece name and corps
         piece = chessboard.board[chessboard.x1][chessboard.y1]
         chessboard.canvas.tag_raise(piece)
         #print(np.rot90(np.fliplr(chessboard.board)))
