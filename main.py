@@ -160,6 +160,37 @@ class CHESSBOARD:
                 if(x<8):
                     self.highlight_green(x+1, y-1, piece)
 
+        if(piece=="br1" or piece=="br2"):
+            return
+        
+        if(piece=="wr1" or piece=="wr2"):
+            return
+
+        if(piece=="bkn1" or piece=="bkn2"):
+            return
+
+        if(piece=="wkn1" or piece=="wkn2"):
+            return
+
+        if(piece=="bb1" or piece=="bb2"):
+
+            return
+
+        if(piece=="wb1" or piece=="wb2"):
+            return
+        
+        if(piece=="bq"):
+            return
+
+        if(piece=="wq"):
+            return
+
+        if(piece=="bk"):
+            return
+
+        if(piece=="wk"):
+            return
+
     def piece_check(self):
         self.canvas.delete("move_locations")
         if (self.board[self.x1][self.y1] != ""):
