@@ -24,6 +24,7 @@ class CHESSBOARD:
     fake_roll_val = 5
     fake_roll_time_interval = 200
     turn = 0
+    selected_piece = ["", ""]
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -56,31 +57,31 @@ class CHESSBOARD:
             return self.color2
 
     def pieces(self):
-        self.br = PhotoImage(file="./icons/br.png")
+        self.br = PhotoImage(file="./data/pieces/br.png")
         lbr1, lbr2 = "11", "81"
         self.add_piece(self.br, lbr1, "br1")
         self.add_piece(self.br, lbr2, "br2")
 
-        self.bkn = PhotoImage(file="./icons/bkn.png")
+        self.bkn = PhotoImage(file="./data/pieces/bkn.png")
         lbkn1, lbkn2 = "21", "71"
         self.add_piece(self.bkn, lbkn1, "bkn1")
         self.add_piece(self.bkn, lbkn2, "bkn2")
 
-        self.bb = PhotoImage(file="./icons/bb.png")
+        self.bb = PhotoImage(file="./data/pieces/bb.png")
         lbb1, lbb2 = "31", "61"
         self.add_piece(self.bb, lbb1, "bb1")
         self.add_piece(self.bb, lbb2, "bb2")
 
-        self.bq = PhotoImage(file="./icons/bq.png")
+        self.bq = PhotoImage(file="./data/pieces/bq.png")
         lbq = "41"
         self.add_piece(self.bq, lbq, "bq")
 
-        self.bk = PhotoImage(file="./icons/bk.png")
+        self.bk = PhotoImage(file="./data/pieces/bk.png")
         lbk = "51"
         self.add_piece(self.bk, lbk, "bk")
 
         
-        self.bp = PhotoImage(file="./icons/bp.png")
+        self.bp = PhotoImage(file="./data/pieces/bp.png")
         lbp1, lbp2, lbp3, lbp4, lbp5, lbp6, lbp7, lbp8 = "12", "22", "32", "42", "52", "62", "72", "82"
         self.add_piece(self.bp, lbp1, "bp1")
         self.add_piece(self.bp, lbp2, "bp2")
@@ -92,30 +93,30 @@ class CHESSBOARD:
         self.add_piece(self.bp, lbp8, "bp8")
         
         
-        self.wr = PhotoImage(file='./icons/wr.png')
+        self.wr = PhotoImage(file='./data/pieces/wr.png')
         lwr1, lwr2 = "18", "88"
         self.add_piece(self.wr, lwr1, "wr1")
         self.add_piece(self.wr, lwr2, "wr2")
 
-        self.wkn = PhotoImage(file="./icons/wkn.png")
+        self.wkn = PhotoImage(file="./data/pieces/wkn.png")
         lwkn1, lwkn2 = "28", "78"
         self.add_piece(self.wkn, lwkn1, "wkn1")
         self.add_piece(self.wkn, lwkn2, "wkn2")
 
-        self.wb = PhotoImage(file="./icons/wb.png")
+        self.wb = PhotoImage(file="./data/pieces/wb.png")
         lwb1, lwb2 = "38", "68"
         self.add_piece(self.wb, lwb1, "wb1")
         self.add_piece(self.wb, lwb2, "wb2")
 
-        self.wq = PhotoImage(file="./icons/wq.png")
+        self.wq = PhotoImage(file="./data/pieces/wq.png")
         lwq = "48"
         self.add_piece(self.wq, lwq, "wq")
 
-        self.wk = PhotoImage(file="./icons/wk.png")
+        self.wk = PhotoImage(file="./data/pieces/wk.png")
         lwk = "58"
         self.add_piece(self.wk, lwk, "wk")
 
-        self.wp = PhotoImage(file="./icons/wp.png")
+        self.wp = PhotoImage(file="./data/pieces/wp.png")
         lwp1, lwp2, lwp3, lwp4, lwp5, lwp6, lwp7, lwp8 = "17", "27", "37", "47", "57", "67", "77", "87"
         self.add_piece(self.wp, lwp1, "wp1")
         self.add_piece(self.wp, lwp2, "wp2")
@@ -127,10 +128,8 @@ class CHESSBOARD:
         self.add_piece(self.wp, lwp8, "wp8")
 
     def add_piece(self, img, location, piece):
-        print(img, location, piece)
         posx = int(location[0])
         posy = int(location[1])
-        print(posx,posy)
         self.board[posx][posy] = piece
         offset_x = 32
         offset_y = 132
@@ -152,19 +151,17 @@ class CHESSBOARD:
         return self.dice_val
 
     def show_dice(self):
-        self.dice1 = ImageTk.PhotoImage(Image.open("icons/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice2 = ImageTk.PhotoImage(Image.open("icons/dice2.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice3 = ImageTk.PhotoImage(Image.open("icons/dice3.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice4 = ImageTk.PhotoImage(Image.open("icons/dice4.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice5 = ImageTk.PhotoImage(Image.open("icons/dice5.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice6 = ImageTk.PhotoImage(Image.open("icons/dice6.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice1 = ImageTk.PhotoImage(Image.open("./data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice2 = ImageTk.PhotoImage(Image.open("./data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice3 = ImageTk.PhotoImage(Image.open("./data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice4 = ImageTk.PhotoImage(Image.open("./data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice5 = ImageTk.PhotoImage(Image.open("./data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice6 = ImageTk.PhotoImage(Image.open("./data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
 
         self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
 
         for roll in range(0, self.fake_roll_val):
-            print(roll)
             self.roll_value()
-            print(self.dice_val)
             if self.dice_val == 1:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
             elif self.dice_val == 2:
@@ -177,6 +174,72 @@ class CHESSBOARD:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice")
             elif self.dice_val == 6:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
+
+    def rule_set(self):
+        if(self.selected_piece[0][:-1] == "bp"):
+            if(int(self.selected_piece[0][2]) <= 3):
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 1] #distance can travel, team, piece, core
+            if(int(self.selected_piece[0][2]) == 4 or int(self.selected_piece[0][2]) == 5):
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+            if(int(self.selected_piece[0][2]) >= 6):
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+
+        if(self.selected_piece[0][:-1] == "wp"):
+            if(int(self.selected_piece[0][2]) <= 3):
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 1]
+            if(int(self.selected_piece[0][2]) == 4 or int(self.selected_piece[0][2]) == 5):
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+            if(int(self.selected_piece[0][2]) >= 6):
+                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+
+        if(self.selected_piece[0][:-1] == "br"):
+            return [2, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+
+
+        if(self.selected_piece[0][:-1] == "wr"):
+            return [2, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+
+
+        if(self.selected_piece[0][:-1] == "bkn"):
+            if(int(self.selected_piece[0][3]) == 1):
+                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 1]
+            if(int(self.selected_piece[0][3]) == 2):
+                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 3]
+
+        if(self.selected_piece[0][:-1] == "wkn"):
+            if(int(self.selected_piece[0][3]) == 1):
+                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 1]
+            if(int(self.selected_piece[0][3]) == 2):
+                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 3]
+
+        if(self.selected_piece[0][:-1] == "bb"):
+            if(int(self.selected_piece[0][2]) == 1):
+                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 1]
+            if(int(self.selected_piece[0][2]) == 2):
+                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+
+        if(self.selected_piece[0][:-1] == "wb"):
+            if(int(self.selected_piece[0][2]) == 1):
+                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 1]
+            if(int(self.selected_piece[0][2]) == 2):
+                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+
+        if(self.selected_piece[0] == "bq"):
+            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+
+        if(self.selected_piece[0] == "wq"):
+            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+
+        if(self.selected_piece[0] == "bk"):
+            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+
+        if(self.selected_piece[0] == "wk"):
+            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+            
+        return
+
+    def valid_moves(self, ):
+        return
         
 
 def on_right_click(event, chessboard):
@@ -186,17 +249,20 @@ def on_right_click(event, chessboard):
 
 def on_click(event, chessboard):
     chessboard.canvas.delete("piece_selected")
+    chessboard.selected_piece = ["", ""]
     x, y = event.x - 2, event.y - 100
     if x > 0 and x <= 512 and y > 0 and y <= 512:
         if(chessboard.board[chessboard.x1][chessboard.y1] != ""):
             chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
                 ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
                 fill = chessboard.color3, tag = "piece_selected")
-        
+            chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)]
+            dist = chessboard.rule_set()
+            print(dist)
         piece = chessboard.board[chessboard.x1][chessboard.y1]
-        print(piece)
         chessboard.canvas.tag_raise(piece)
-        print(np.rot90(np.fliplr(chessboard.board)))
+        #print(np.rot90(np.fliplr(chessboard.board)))
+    #print(chessboard.selected_piece)
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
@@ -221,7 +287,7 @@ def main():
     root = tk.Tk()
     root.title('Fuzzy-Logic Medieval Chess')
     chessboard = CHESSBOARD(root)
-    icon = PhotoImage(file="./icons/mainIcon.png")
+    icon = PhotoImage(file="./data/misc/mainIcon.png")
     root.iconphoto(False, icon)
     root.resizable(False, False)
     root.bind("<Motion>", lambda event: motion(event, chessboard))
