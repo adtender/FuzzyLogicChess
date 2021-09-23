@@ -7,13 +7,12 @@ from PIL import ImageTk, Image
 
 class CHESSBOARD:
     board = np.empty((9,9), dtype="<U10")
-    vMove = [""]
-    selectedPieceLocation = ""
     x1 = -1
     y1 = -1
-    loc = ""
     color1 = "#706677"
     color2 = "#ccb7ae"
+    color3 = "#eefaac"
+    color4 = "#4bc96c"
     rows = 8
     columns = 8
     dim_square = 64
@@ -24,6 +23,7 @@ class CHESSBOARD:
     dice_val = ""
     fake_roll_val = 5
     fake_roll_time_interval = 200
+    turn = 0
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -130,6 +130,7 @@ class CHESSBOARD:
         print(img, location, piece)
         posx = int(location[0])
         posy = int(location[1])
+        print(posx,posy)
         self.board[posx][posy] = piece
         offset_x = 32
         offset_y = 132
@@ -140,94 +141,14 @@ class CHESSBOARD:
         #self.canvas.delete("move_locations")
         self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
             ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
-            fill = "#4bc96c", tag = "move_locations")
+            fill = self.color4, tag = "move_locations")
         self.canvas.lower("move_locations")
         self.canvas.lower("board")
         self.valid_move(x, y, piece)
     
-    def piece_logic(self, piece, x, y):
-        if(piece=="bp1" or piece=="bp2" or piece=="bp3" or piece=="bp4" or piece=="bp5" or piece=="bp6" or piece=="bp7" or piece=="bp8"):
-            if(y<8):
-                self.highlight_green(x-1, y+1, piece)
-                self.highlight_green(x, y+1, piece)
-                if(x<8):
-                    self.highlight_green(x+1, y+1, piece)
-
-        if(piece=="wp1" or piece=="wp2" or piece=="wp3" or piece=="wp4" or piece=="wp5" or piece=="wp6" or piece=="wp7" or piece=="wp8"):
-            if(y<8):
-                self.highlight_green(x-1, y-1, piece)
-                self.highlight_green(x, y-1, piece)
-                if(x<8):
-                    self.highlight_green(x+1, y-1, piece)
-
-        if(piece=="br1" or piece=="br2"):
-            return
-        
-        if(piece=="wr1" or piece=="wr2"):
-            return
-
-        if(piece=="bkn1" or piece=="bkn2"):
-            return
-
-        if(piece=="wkn1" or piece=="wkn2"):
-            return
-
-        if(piece=="bb1" or piece=="bb2"):
-
-            return
-
-        if(piece=="wb1" or piece=="wb2"):
-            return
-        
-        if(piece=="bq"):
-            return
-
-        if(piece=="wq"):
-            return
-
-        if(piece=="bk"):
-            return
-
-        if(piece=="wk"):
-            return
-
-    def piece_check(self):
-        self.canvas.delete("move_locations")
-        if (self.board[self.x1][self.y1] != ""):
-            self.canvas.delete("piece_selected")
-            self.canvas.create_rectangle(((self.x1 - 1) * 64) +4, ((self.y1) * 64) + 37, 
-                ((self.x1 - 1) * 64) + self.dim_square, (self.y1 * 64) + self.dim_square + 35, 
-                fill = "#eefaac", tag = "piece_selected")
-            self.piece_logic(self.board[self.x1][self.y1], self.x1, self.y1)
-            self.selectedPieceLocation = str(self.x1) + str(self.y1)
-            #print(self.board[self.x1][self.y1])
-            return 1
-        else:
-            for i in self.vMove:
-                if(str(self.x1) + str(self.y1) == i):
-                    piece_name = self.vMove[0][-1]
-                    #piece_name = piece_name[-1]
-                    if (piece_name.isnumeric()):
-                        piece_name = self.vMove[0][:-1]
-                    relPath = "./icons/" + piece_name + ".png"
-                    img = eval("self." + piece_name)
-                    self.canvas.delete(self.vMove[0])
-                    self.add_piece(img, str(self.x1) + str(self.y1), self.vMove[0])
-                    self.canvas.delete("piece_selected")
-                    #print(self.x1, self.y1)
-                    self.board[int(self.selectedPieceLocation[0])][int(self.selectedPieceLocation[1])] = ""
-
-            
-        return 0
-
-    def valid_move(self, x, y, piece):
-        self.vMove[0] = piece
-        self.vMove.append(str(x)+str(y))
-        #print(self.vMove)
 
     def roll_value(self):
         self.dice_val = random.randrange(1,6)
-        #print(self.dice_val)
         return self.dice_val
 
     def show_dice(self):
@@ -264,16 +185,18 @@ def on_right_click(event, chessboard):
     chessboard.board[chessboard.x1][chessboard.y1] = ""
 
 def on_click(event, chessboard):
+    chessboard.canvas.delete("piece_selected")
     x, y = event.x - 2, event.y - 100
     if x > 0 and x <= 512 and y > 0 and y <= 512:
-        #chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
-        #    ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
-        #    fill = "#4bc96c", tag = "move_locations")
+        if(chessboard.board[chessboard.x1][chessboard.y1] != ""):
+            chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
+                ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
+                fill = chessboard.color3, tag = "piece_selected")
         
         piece = chessboard.board[chessboard.x1][chessboard.y1]
-        chessboard.piece_check()
+        print(piece)
         chessboard.canvas.tag_raise(piece)
-        print(chessboard.board)
+        print(np.rot90(np.fliplr(chessboard.board)))
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
@@ -284,13 +207,11 @@ def motion(event, chessboard):
     piece = chessboard.board[chessboard.x1][chessboard.y1]
     if x > 0 and x <= 512 and y > 0 and y <= 512:
         chessboard.loc = str(overChar) + str(down)
-        #print(over - 64,abs(down-9))
-        #print(chessboard.loc)
         CHESSBOARD.x1 = over-64
         CHESSBOARD.y1 = abs(down-9)
         chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
             ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
-            fill = "#eefaac", tag = "hlight")
+            fill = chessboard.color3, tag = "hlight")
         chessboard.canvas.tag_raise("move_locations")
         chessboard.canvas.tag_raise(piece)
         chessboard.canvas.lower("move_locations")
