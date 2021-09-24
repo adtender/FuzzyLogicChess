@@ -7,6 +7,7 @@ from PIL import ImageTk, Image
 
 class CHESSBOARD:
     board = np.empty((9,9), dtype="<U10")
+    valid_moves_array = ""
     x1 = -1
     y1 = -1
     color1 = "#706677"
@@ -136,16 +137,6 @@ class CHESSBOARD:
         self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
             image=img, anchor="center", tag=piece)
 
-    def highlight_green(self, x, y, piece):
-        #self.canvas.delete("move_locations")
-        self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
-            ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
-            fill = self.color4, tag = "move_locations")
-        self.canvas.lower("move_locations")
-        self.canvas.lower("board")
-        self.valid_move(x, y, piece)
-    
-
     def roll_value(self):
         self.dice_val = random.randrange(1,6)
         return self.dice_val
@@ -175,70 +166,118 @@ class CHESSBOARD:
             elif self.dice_val == 6:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
 
-    def rule_set(self):
-        if(self.selected_piece[0][:-1] == "bp"):
-            if(int(self.selected_piece[0][2]) <= 3):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 1] #distance can travel, team, piece, corps
-            if(int(self.selected_piece[0][2]) == 4 or int(self.selected_piece[0][2]) == 5):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 2]
-            if(int(self.selected_piece[0][2]) >= 6):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+    def rule_set(self, spiece):
+        if(spiece[0][:-1] == "bp"):
+            if(int(spiece[0][2]) <= 3):
+                return [1, spiece[0][0], spiece[0][1], 1] #distance can travel, team, piece, corps
+            if(int(spiece[0][2]) == 4 or int(spiece[0][2]) == 5):
+                return [1, spiece[0][0], spiece[0][1], 2]
+            if(int(spiece[0][2]) >= 6):
+                return [1, spiece[0][0], spiece[0][1], 3]
 
-        if(self.selected_piece[0][:-1] == "wp"):
-            if(int(self.selected_piece[0][2]) <= 3):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 1]
-            if(int(self.selected_piece[0][2]) == 4 or int(self.selected_piece[0][2]) == 5):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 2]
-            if(int(self.selected_piece[0][2]) >= 6):
-                return [1, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+        if(spiece[0][:-1] == "wp"):
+            if(int(spiece[0][2]) <= 3):
+                return [1, spiece[0][0], spiece[0][1], 1]
+            if(int(spiece[0][2]) == 4 or int(spiece[0][2]) == 5):
+                return [1, spiece[0][0], spiece[0][1], 2]
+            if(int(spiece[0][2]) >= 6):
+                return [1, spiece[0][0], spiece[0][1], 3]
 
-        if(self.selected_piece[0][:-1] == "br"):
-            return [2, self.selected_piece[0][0], self.selected_piece[0][1], 2]
-
-
-        if(self.selected_piece[0][:-1] == "wr"):
-            return [2, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+        if(spiece[0][:-1] == "br"):
+            return [2, spiece[0][0], spiece[0][1], 2]
 
 
-        if(self.selected_piece[0][:-1] == "bkn"):
-            if(int(self.selected_piece[0][3]) == 1):
-                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 1]
-            if(int(self.selected_piece[0][3]) == 2):
-                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 3]
+        if(spiece[0][:-1] == "wr"):
+            return [2, spiece[0][0], spiece[0][1], 2]
 
-        if(self.selected_piece[0][:-1] == "wkn"):
-            if(int(self.selected_piece[0][3]) == 1):
-                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 1]
-            if(int(self.selected_piece[0][3]) == 2):
-                return [4, self.selected_piece[0][0], str(self.selected_piece[0][1]) + str(self.selected_piece[0][2]), 3]
 
-        if(self.selected_piece[0][:-1] == "bb"):
-            if(int(self.selected_piece[0][2]) == 1):
-                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 1]
-            if(int(self.selected_piece[0][2]) == 2):
-                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+        if(spiece[0][:-1] == "bkn"):
+            if(int(spiece[0][3]) == 1):
+                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 1]
+            if(int(spiece[0][3]) == 2):
+                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 3]
 
-        if(self.selected_piece[0][:-1] == "wb"):
-            if(int(self.selected_piece[0][2]) == 1):
-                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 1]
-            if(int(self.selected_piece[0][2]) == 2):
-                return [2, self.selected_piece[0][0], self.selected_piece[0][1], 3]
+        if(spiece[0][:-1] == "wkn"):
+            if(int(spiece[0][3]) == 1):
+                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 1]
+            if(int(spiece[0][3]) == 2):
+                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 3]
 
-        if(self.selected_piece[0] == "bq"):
-            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+        if(spiece[0][:-1] == "bb"):
+            if(int(spiece[0][2]) == 1):
+                return [2, spiece[0][0], spiece[0][1], 1]
+            if(int(spiece[0][2]) == 2):
+                return [2, spiece[0][0], spiece[0][1], 3]
 
-        if(self.selected_piece[0] == "wq"):
-            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+        if(spiece[0][:-1] == "wb"):
+            if(int(spiece[0][2]) == 1):
+                return [2, spiece[0][0], spiece[0][1], 1]
+            if(int(spiece[0][2]) == 2):
+                return [2, spiece[0][0], spiece[0][1], 3]
 
-        if(self.selected_piece[0] == "bk"):
-            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+        if(spiece[0] == "bq"):
+            return [3, spiece[0][0], spiece[0][1], 2]
 
-        if(self.selected_piece[0] == "wk"):
-            return [3, self.selected_piece[0][0], self.selected_piece[0][1], 2]
+        if(spiece[0] == "wq"):
+            return [3, spiece[0][0], spiece[0][1], 2]
 
-    def valid_moves(self, ):
-        return
-        
+        if(spiece[0] == "bk"):
+            return [3, spiece[0][0], spiece[0][1], 2]
+
+        if(spiece[0] == "wk"):
+            return [3, spiece[0][0], spiece[0][1], 2]
+
+    def highlight_green(self, x, y):
+        #print("x:", x, " y:", y)
+        self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
+            ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
+            fill = self.color4, tag = "move_locations")
+        self.canvas.tag_raise("move_locations")
+        #self.canvas.lower("board")
+
+    def valid_moves(self, dist):
+
+        nw, n, ne, e, se, s, sw, w = [1, -1, -1], [1, 0, 1], [1, 1, -1], [1, 1, 0], [1, 1, 1], [1, 0, -1], [1, -1, 1], [1, -1, 0]
+        #spiece = [self.board[self.x1][self.y1], str(self.x1) + str(self.y1)]
+        #team = dist[1]
+        #spiece = ""
+        self.valid_moves_arrayF(nw, dist)
+        self.valid_moves_arrayF(n, dist)
+        self.valid_moves_arrayF(ne, dist)
+        self.valid_moves_arrayF(e, dist)
+        self.valid_moves_arrayF(se, dist)
+        self.valid_moves_arrayF(s, dist)
+        self.valid_moves_arrayF(sw, dist)
+        self.valid_moves_arrayF(w, dist)
+
+    def valid_moves_arrayF(self, cr, dist):
+        team = dist[1]
+        spiece = ""
+        try:
+            for x in range(1, dist[0] + 1):
+                if (cr[0] == 1):
+                    spiece = [self.board[self.x1 - (x * cr[1])][self.y1 - (x * cr[2])], str(self.x1 - (x * cr[1])) + str(self.y1 - (x * cr[2]))]
+                    #print("speice:", spiece)
+                    if(spiece[0] != ""):
+                        #print(1)
+                        if(spiece[0][0] == team):
+                            #print(2)
+                            cr[0] == 0
+                            self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
+                            break
+                        if(spiece[0][0] != team and spiece[0][0] != ""):
+                            #print(3)
+                            cr[0] == 0
+                            self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
+                            self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
+                            break
+                    if(spiece[0] == ""):
+                        #print(4)
+                        self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
+                        self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
+                    #print("spiece:", spiece)
+        except:
+            return
 
 def on_right_click(event, chessboard):
     piece = chessboard.board[chessboard.x1][chessboard.y1]
@@ -246,7 +285,9 @@ def on_right_click(event, chessboard):
     chessboard.board[chessboard.x1][chessboard.y1] = ""
 
 def on_click(event, chessboard):
+    chessboard.valid_moves_array = np.empty((9,9), dtype="<U10")
     chessboard.canvas.delete("piece_selected")
+    chessboard.canvas.delete("move_locations")
     chessboard.selected_piece = ["", ""]
     x, y = event.x - 2, event.y - 100
     if x > 0 and x <= 512 and y > 0 and y <= 512:
@@ -255,11 +296,14 @@ def on_click(event, chessboard):
                 ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
                 fill = chessboard.color3, tag = "piece_selected")
             chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)]
-            dist = chessboard.rule_set() #gather distance can move, team, piece name and corps
+            dist = chessboard.rule_set(chessboard.selected_piece) #gather distance can move, team, piece name and corps
+            #print("dist:" , dist)
+            chessboard.valid_moves(dist)
         piece = chessboard.board[chessboard.x1][chessboard.y1]
         chessboard.canvas.tag_raise(piece)
         #print(np.rot90(np.fliplr(chessboard.board)))
-    #print(chessboard.selected_piece)
+    #print("chessboard.selected_piece:" , chessboard.selected_piece)
+    print(np.rot90(np.fliplr(chessboard.valid_moves_array)))
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
