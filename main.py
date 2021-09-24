@@ -233,7 +233,6 @@ class CHESSBOARD:
             ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
             fill = self.color4, tag = "move_locations")
         self.canvas.tag_raise("move_locations")
-        #self.canvas.lower("board")
 
     def valid_moves(self, dist):
 
@@ -257,25 +256,27 @@ class CHESSBOARD:
             for x in range(1, dist[0] + 1):
                 if (cr[0] == 1):
                     spiece = [self.board[self.x1 - (x * cr[1])][self.y1 - (x * cr[2])], str(self.x1 - (x * cr[1])) + str(self.y1 - (x * cr[2]))]
-                    #print("speice:", spiece)
-                    if(spiece[0] != ""):
-                        #print(1)
-                        if(spiece[0][0] == team):
-                            #print(2)
-                            cr[0] == 0
-                            self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
-                            break
-                        if(spiece[0][0] != team and spiece[0][0] != ""):
-                            #print(3)
-                            cr[0] == 0
-                            self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
-                            self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
-                            break
-                    if(spiece[0] == ""):
-                        #print(4)
-                        self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
-                        self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
-                    #print("spiece:", spiece)
+                    print("speice:", spiece)
+                    if(int(spiece[1][0]) > 0 and int(spiece[1][0]) < 9):
+                        if(int(spiece[1][1]) > 0 and int(spiece[1][1]) < 9):
+                            if(spiece[0] != ""):
+                                #print(1)
+                                if(spiece[0][0] == team):
+                                    #print(2)
+                                    cr[0] == 0
+                                    self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
+                                    break
+                                if(spiece[0][0] != team and spiece[0][0] != ""):
+                                    #print(3)
+                                    cr[0] == 0
+                                    self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 2
+                                    self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
+                                    break
+                            if(spiece[0] == ""):
+                                #print(4)
+                                self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
+                                self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
+                            #print("spiece:", spiece)
         except:
             return
 
