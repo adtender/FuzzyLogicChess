@@ -286,11 +286,11 @@ class CHESSBOARD:
             print(self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
             img = eval("self." + self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
             if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "b"):
-                self.canvas.create_image(32 * ((self.black_kill*2)-1), 675, 
+                self.canvas.create_image(32 * (self.black_kill) -15, 675, 
                     image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
                 self.black_kill += 1
             if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "w"):
-                self.canvas.create_image(32 * ((self.white_kill*2)-1), 50, 
+                self.canvas.create_image(32 * (self.white_kill) -15, 50, 
                         image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
                 self.white_kill += 1
                 
