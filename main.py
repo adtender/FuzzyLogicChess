@@ -275,13 +275,21 @@ class CHESSBOARD:
             image=img, anchor="center", tag=piece)
         
     def del_piece(self, old_piece):
-        x, y = int(old_piece[1][0]), int(old_piece[1][1])
-        self.canvas.delete(old_piece[0])
-        self.board[x][y] = ""
+        if(old_piece[0].isnumeric() != True):
+            x, y = int(old_piece[1][0]), int(old_piece[1][1])
+            self.canvas.delete(old_piece[0])
+            self.board[x][y] = ""
+        else:
+            print(self.board[int(old_piece[0])][int(old_piece[1])])
+            self.canvas.delete(self.board[int(old_piece[0])][int(old_piece[1])])
+            #self.board[old_piece[0]][old_piece[1]] = ""
+
         return
 
 def on_click(event, chessboard):
     if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
+        if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
+            chessboard.del_piece(str(chessboard.x1) + str(chessboard.y1))
         print(chessboard.selected_piece)
         img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0]))
         chessboard.del_piece(chessboard.selected_piece)
@@ -310,10 +318,10 @@ def on_click(event, chessboard):
     #print("chessboard.selected_piece:" , chessboard.selected_piece)
     #print(np.rot90(np.fliplr(chessboard.valid_moves_array)))
 
-def on_right_click(event, chessboard):
-    piece = chessboard.board[chessboard.x1][chessboard.y1]
-    chessboard.canvas.delete(piece)
-    chessboard.board[chessboard.x1][chessboard.y1] = ""
+#def on_right_click(event, chessboard):
+    #piece = chessboard.board[chessboard.x1][chessboard.y1]
+    #chessboard.canvas.delete(piece)
+    #chessboard.board[chessboard.x1][chessboard.y1] = ""
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
@@ -343,7 +351,7 @@ def main():
     root.resizable(False, False)
     root.bind("<Motion>", lambda event: motion(event, chessboard))
     root.bind("<Button-1>", lambda event: on_click(event, chessboard))
-    root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
+    #root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
     root.mainloop()
 
 if __name__ == "__main__":
