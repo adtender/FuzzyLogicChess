@@ -10,7 +10,7 @@ class CHESSBOARD:
     board, valid_moves_array = np.empty((9,9), dtype="<U10"), np.empty((9,9), dtype="<U10")
     x1, y1 = -1, -1
     br, bkn, bb, bq, bk, bp, wr, wkn, wb, wq, wk, wp = "", "", "", "", "", "", "", "", "", "", "", ""
-    color1, color2, color3, color4 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c"
+    color1, color2, color3, color4, color5 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c", "#9c1e37"
     rows, columns = 8, 8
     dim_square = 64
     top_offset, side_offset = 200, 100
@@ -20,6 +20,7 @@ class CHESSBOARD:
     fake_roll_val, fake_roll_time_interval = 5, 200
     turn = 0
     selected_piece = ["", ""]
+    white_kill, black_kill = 1, 1
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -211,11 +212,12 @@ class CHESSBOARD:
         if(spiece[0] == "wk"):
             return [3, spiece[0][0], spiece[0][1], 2]
 
-    def highlight_green(self, x, y):
+    def highlight_green(self, x, y, color):
         self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
             ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
-            fill = self.color4, tag = "move_locations")
-        self.canvas.tag_raise("move_locations")
+            fill = color, tag = "move_locations")
+        self.canvas.tag_lower("move_locations")
+        self.canvas.tag_lower("board")
 
     def valid_moves(self, dist):
 
@@ -249,11 +251,11 @@ class CHESSBOARD:
                                 if(spiece[0][0] != team and spiece[0][0] != ""):
                                     cr[0] == 0
                                     self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 2
-                                    self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
+                                    self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color5)
                                     break
                             if(spiece[0] == ""):
                                 self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
-                                self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
+                                self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color4)
         except:
             return
 
@@ -280,11 +282,18 @@ class CHESSBOARD:
             self.canvas.delete(old_piece[0])
             self.board[x][y] = ""
         else:
-            print(self.board[int(old_piece[0])][int(old_piece[1])])
             self.canvas.delete(self.board[int(old_piece[0])][int(old_piece[1])])
-            #self.board[old_piece[0]][old_piece[1]] = ""
-
-        return
+            print(self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
+            img = eval("self." + self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
+            if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "b"):
+                self.canvas.create_image(32 * ((self.black_kill*2)-1), 675, 
+                    image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
+                self.black_kill += 1
+            if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "w"):
+                self.canvas.create_image(32 * ((self.white_kill*2)-1), 50, 
+                        image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
+                self.white_kill += 1
+                
 
 def on_click(event, chessboard):
     if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
