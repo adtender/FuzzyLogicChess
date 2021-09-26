@@ -4,26 +4,20 @@ import numpy as np
 import math
 import random
 from PIL import ImageTk, Image
+from numpy.core.numerictypes import obj2sctype
 
 class CHESSBOARD:
-    board = np.empty((9,9), dtype="<U10")
-    valid_moves_array = ""
-    x1 = -1
-    y1 = -1
-    color1 = "#706677"
-    color2 = "#ccb7ae"
-    color3 = "#eefaac"
-    color4 = "#4bc96c"
-    rows = 8
-    columns = 8
+    board, valid_moves_array = np.empty((9,9), dtype="<U10"), np.empty((9,9), dtype="<U10")
+    x1, y1 = -1, -1
+    br, bkn, bb, bq, bk, bp, wr, wkn, wb, wq, wk, wp = "", "", "", "", "", "", "", "", "", "", "", ""
+    color1, color2, color3, color4 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c"
+    rows, columns = 8, 8
     dim_square = 64
-    top_offset = 200
-    side_offset = 100
+    top_offset, side_offset = 200, 100
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
     dice_val = ""
-    fake_roll_val = 5
-    fake_roll_time_interval = 200
+    fake_roll_val, fake_roll_time_interval = 5, 200
     turn = 0
     selected_piece = ["", ""]
 
@@ -35,7 +29,6 @@ class CHESSBOARD:
         self.draw_board()
         self.pieces()
         self.show_dice()
-
 
     def draw_board(self):
         intCheck = 0
@@ -128,15 +121,6 @@ class CHESSBOARD:
         self.add_piece(self.wp, lwp7, "wp7")
         self.add_piece(self.wp, lwp8, "wp8")
 
-    def add_piece(self, img, location, piece):
-        posx = int(location[0])
-        posy = int(location[1])
-        self.board[posx][posy] = piece
-        offset_x = 32
-        offset_y = 132
-        self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
-            image=img, anchor="center", tag=piece)
-
     def roll_value(self):
         self.dice_val = random.randrange(1,6)
         return self.dice_val
@@ -228,7 +212,6 @@ class CHESSBOARD:
             return [3, spiece[0][0], spiece[0][1], 2]
 
     def highlight_green(self, x, y):
-        #print("x:", x, " y:", y)
         self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
             ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
             fill = self.color4, tag = "move_locations")
@@ -256,36 +239,57 @@ class CHESSBOARD:
             for x in range(1, dist[0] + 1):
                 if (cr[0] == 1):
                     spiece = [self.board[self.x1 - (x * cr[1])][self.y1 - (x * cr[2])], str(self.x1 - (x * cr[1])) + str(self.y1 - (x * cr[2]))]
-                    print("speice:", spiece)
                     if(int(spiece[1][0]) > 0 and int(spiece[1][0]) < 9):
                         if(int(spiece[1][1]) > 0 and int(spiece[1][1]) < 9):
                             if(spiece[0] != ""):
-                                #print(1)
                                 if(spiece[0][0] == team):
-                                    #print(2)
                                     cr[0] == 0
                                     self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
                                     break
                                 if(spiece[0][0] != team and spiece[0][0] != ""):
-                                    #print(3)
                                     cr[0] == 0
                                     self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 2
                                     self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
                                     break
                             if(spiece[0] == ""):
-                                #print(4)
                                 self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
                                 self.highlight_green(int(spiece[1][0]), int(spiece[1][1]))
-                            #print("spiece:", spiece)
         except:
             return
 
-def on_right_click(event, chessboard):
-    piece = chessboard.board[chessboard.x1][chessboard.y1]
-    chessboard.canvas.delete(piece)
-    chessboard.board[chessboard.x1][chessboard.y1] = ""
+    def ret_piece_name(self, x):
+        if(x[-1:].isnumeric()):
+            return x[:-1]
+        else:
+            return x
+
+    def add_piece(self, img, location, piece):
+        self.canvas.delete("piece_selected")
+        self.canvas.delete("move_locations")
+        posx = int(location[0])
+        posy = int(location[1])
+        self.board[posx][posy] = piece
+        offset_x = 32
+        offset_y = 132
+        self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
+            image=img, anchor="center", tag=piece)
+        
+    def del_piece(self, old_piece):
+        x, y = int(old_piece[1][0]), int(old_piece[1][1])
+        self.canvas.delete(old_piece[0])
+        self.board[x][y] = ""
+        return
 
 def on_click(event, chessboard):
+    if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
+        print(chessboard.selected_piece)
+        img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0]))
+        chessboard.del_piece(chessboard.selected_piece)
+        chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0])
+        chessboard.valid_moves_array = np.empty((9,9), dtype="<U10")
+        print(np.rot90(np.fliplr(chessboard.board)))
+        return
+
     chessboard.valid_moves_array = np.empty((9,9), dtype="<U10")
     chessboard.canvas.delete("piece_selected")
     chessboard.canvas.delete("move_locations")
@@ -304,7 +308,12 @@ def on_click(event, chessboard):
         chessboard.canvas.tag_raise(piece)
         #print(np.rot90(np.fliplr(chessboard.board)))
     #print("chessboard.selected_piece:" , chessboard.selected_piece)
-    print(np.rot90(np.fliplr(chessboard.valid_moves_array)))
+    #print(np.rot90(np.fliplr(chessboard.valid_moves_array)))
+
+def on_right_click(event, chessboard):
+    piece = chessboard.board[chessboard.x1][chessboard.y1]
+    chessboard.canvas.delete(piece)
+    chessboard.board[chessboard.x1][chessboard.y1] = ""
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
