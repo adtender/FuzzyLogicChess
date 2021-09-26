@@ -5,9 +5,9 @@ The purpose of this project is to create a chess playing application that runs o
 
 ## The Rules
 
-<img src="./icons/FL-MCR1.jpg"
+<img src="./data/misc/FL-MCR1.jpg"
      alt="Rule set page 1"
      style="float: left; margin-right: 10px;" />
-<img src="./icons/FL-MCR2.jpg"
+<img src="./data/misc/FL-MCR2.jpg"
      alt="Rule set page 2"
      style="float: left; margin-right: 10px;" />
