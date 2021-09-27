@@ -19,11 +19,12 @@ class CHESSBOARD:
     top_offset, side_offset = 200, 100
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
-    dice_val = ""
+    dice_val = "5"
     fake_roll_val, fake_roll_time_interval = 5, 1
     turn = 0
     selected_piece = ["", ""]
     white_kill, black_kill = 1, 1
+
     # read excel file for capture info
     capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
     capture_matrix = capture_data.to_numpy()
@@ -136,6 +137,11 @@ class CHESSBOARD:
         self.dice_val = random.randrange(1,6)
         return self.dice_val
 
+    def init_dice(self):
+        # beginning image
+        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
+        
     def show_dice(self):
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
         self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
@@ -143,17 +149,11 @@ class CHESSBOARD:
         self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
         self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
         self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
-
         # using threading library to display images with delay like a randomized dice roll?
         # lets try time sleep instead
-        
-        # beginning image
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
 
         for roll in range(0, self.fake_roll_val):
-            print(roll)
             self.roll_value()
-            print(self.dice_val)
             if self.dice_val == 1: 
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
             elif self.dice_val == 2:
@@ -166,6 +166,7 @@ class CHESSBOARD:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice")
             elif self.dice_val == 6:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
+        print("dice_val after show_dice:", self.dice_val)
 
     def rule_set(self, spiece):
         if(spiece[0][:-1] == "bp"):
@@ -278,18 +279,25 @@ class CHESSBOARD:
     def can_capture(self, attacker, defender):
         capture = FALSE
         
-        # logic to check if piece can capture based on current die roll
+        # based on current die roll
         # access capture_matrix at [attacker][defender]
         # check for dice_val in [attacker][defender]
         # if true, set capture true
-        
-
+        interaction = str(self.capture_matrix[attacker][defender])
+        if(str(self.dice_val) in interaction):
+            capture = TRUE
+        # print("dice_val:", self.dice_val)
+        # print(capture)
         return capture
 
     def capture(self, attacker, defender):
-        if(self.can_capture(attacker, defender)):
+        self.show_dice()
+        result = self.can_capture(attacker, defender)
+        if(result):
+            print(attacker, "successfully captured", defender, "with a roll of:", self.dice_val)
             return 
         else:
+            print(attacker, "did not capture", defender, "with a roll of:", self.dice_val)
             # next turn/phase
             return
 
@@ -395,7 +403,21 @@ def main():
     root.bind("<Motion>", lambda event: motion(event, chessboard))
     root.bind("<Button-1>", lambda event: on_click(event, chessboard))
     #root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
+
+    frame = Frame(root)
+    frame.pack()
+    btRoll = Button(frame, text="Roll", command=chessboard.show_dice())
+    btRoll.pack(side = RIGHT)
+    print("King attacks pawn, Should be 1:")
+    chessboard.capture(0, 5)
+    print("Pawn attacks queen")
+    chessboard.capture(5, 1)
+    print("Bishop attacks Rook:")
+    chessboard.capture(3, 4)
+
     root.mainloop()
+
+    
 
 if __name__ == "__main__":
     main()
