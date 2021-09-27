@@ -5,6 +5,9 @@ import math
 import random
 from PIL import ImageTk, Image
 from numpy.core.numerictypes import obj2sctype
+import time
+import datetime
+import pandas as pd
 
 class CHESSBOARD:
     board, valid_moves_array = np.empty((9,9), dtype="<U10"), np.empty((9,9), dtype="<U10")
@@ -17,10 +20,17 @@ class CHESSBOARD:
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
     dice_val = ""
-    fake_roll_val, fake_roll_time_interval = 5, 200
+    fake_roll_val, fake_roll_time_interval = 5, 1
     turn = 0
     selected_piece = ["", ""]
     white_kill, black_kill = 1, 1
+    # read excel file for capture info
+    capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
+    capture_matrix = capture_data.to_numpy()
+    print(capture_matrix)
+    # print(capture_matrix[0][5])
+    # print(capture_matrix[0][2])
+    del capture_data
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -127,25 +137,31 @@ class CHESSBOARD:
         return self.dice_val
 
     def show_dice(self):
-        self.dice1 = ImageTk.PhotoImage(Image.open("./data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice2 = ImageTk.PhotoImage(Image.open("./data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice3 = ImageTk.PhotoImage(Image.open("./data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice4 = ImageTk.PhotoImage(Image.open("./data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice5 = ImageTk.PhotoImage(Image.open("./data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice6 = ImageTk.PhotoImage(Image.open("./data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
 
+        # using threading library to display images with delay like a randomized dice roll?
+        # lets try time sleep instead
+        
+        # beginning image
         self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
 
         for roll in range(0, self.fake_roll_val):
+            print(roll)
             self.roll_value()
-            if self.dice_val == 1:
+            print(self.dice_val)
+            if self.dice_val == 1: 
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
             elif self.dice_val == 2:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice2 , tag="dice")
             elif self.dice_val == 3:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice3 , tag="dice")
             elif self.dice_val == 4:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice")
+                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice")               
             elif self.dice_val == 5:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice")
             elif self.dice_val == 6:
@@ -257,6 +273,24 @@ class CHESSBOARD:
                                 self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
                                 self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color4)
         except:
+            return
+
+    def can_capture(self, attacker, defender):
+        capture = FALSE
+        
+        # logic to check if piece can capture based on current die roll
+        # access capture_matrix at [attacker][defender]
+        # check for dice_val in [attacker][defender]
+        # if true, set capture true
+        
+
+        return capture
+
+    def capture(self, attacker, defender):
+        if(self.can_capture(attacker, defender)):
+            return 
+        else:
+            # next turn/phase
             return
 
     def ret_piece_name(self, x):
