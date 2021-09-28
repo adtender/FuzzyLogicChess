@@ -40,7 +40,7 @@ class CHESSBOARD:
         self.canvas.pack(padx=8, pady=8)
         self.draw_board()
         self.pieces()
-        self.show_dice()
+        self.init_dice()
 
     def draw_board(self):
         intCheck = 0
@@ -295,6 +295,7 @@ class CHESSBOARD:
         result = self.can_capture(attacker, defender)
         if(result):
             print(attacker, "successfully captured", defender, "with a roll of:", self.dice_val)
+            # next turn/phase
             return 
         else:
             print(attacker, "did not capture", defender, "with a roll of:", self.dice_val)
@@ -341,7 +342,7 @@ def on_click(event, chessboard):
     if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
         if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
             chessboard.del_piece(str(chessboard.x1) + str(chessboard.y1))
-        print(chessboard.selected_piece)
+        # print(chessboard.selected_piece)
         img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0]))
         chessboard.del_piece(chessboard.selected_piece)
         chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0])
@@ -367,7 +368,7 @@ def on_click(event, chessboard):
         chessboard.canvas.tag_raise(piece)
         #print(np.rot90(np.fliplr(chessboard.board)))
     #print("chessboard.selected_piece:" , chessboard.selected_piece)
-    #print(np.rot90(np.fliplr(chessboard.valid_moves_array)))
+    print("", np.rot90(np.fliplr(chessboard.valid_moves_array)))
 
 #def on_right_click(event, chessboard):
     #piece = chessboard.board[chessboard.x1][chessboard.y1]
@@ -404,10 +405,10 @@ def main():
     root.bind("<Button-1>", lambda event: on_click(event, chessboard))
     #root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
 
-    frame = Frame(root)
-    frame.pack()
-    btRoll = Button(frame, text="Roll", command=chessboard.show_dice())
-    btRoll.pack(side = RIGHT)
+    # frame = Frame(root)
+    # frame.pack()
+    # btRoll = Button(frame, text="Roll", command=chessboard.show_dice())
+    # btRoll.pack(side = RIGHT)
     print("King attacks pawn, Should be 1:")
     chessboard.capture(0, 5)
     print("Pawn attacks queen")
