@@ -2,11 +2,14 @@ from tkinter import *
 import tkinter as tk
 import numpy as np
 import math
+import sys
 import random
 from PIL import ImageTk, Image
 from numpy.core.numerictypes import obj2sctype
+from data.misc.tkinter_custom_button import TkinterCustomButton
 import time
 import datetime
+import sqlite3
 import pandas as pd
 
 class CHESSBOARD:
@@ -16,7 +19,7 @@ class CHESSBOARD:
     color1, color2, color3, color4, color5 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c", "#9c1e37"
     rows, columns = 8, 8
     dim_square = 64
-    top_offset, side_offset = 200, 100
+    top_offset, side_offset = 200, 400
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
     dice_val = "5"
@@ -24,7 +27,12 @@ class CHESSBOARD:
     turn = 0
     selected_piece = ["", ""]
     white_kill, black_kill = 1, 1
+    db_loc = './data/db/'
+    conn = ""
+    cursor = ""
+    table = ""
 
+    '''
     # read excel file for capture info
     capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
     capture_matrix = capture_data.to_numpy()
@@ -32,6 +40,7 @@ class CHESSBOARD:
     # print(capture_matrix[0][5])
     # print(capture_matrix[0][2])
     del capture_data
+    '''
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -140,8 +149,9 @@ class CHESSBOARD:
     def init_dice(self):
         # beginning image
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice1 , tag="dice")
         
+    '''
     def show_dice(self):
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
         self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
@@ -167,6 +177,7 @@ class CHESSBOARD:
             elif self.dice_val == 6:
                 self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
         print("dice_val after show_dice:", self.dice_val)
+    '''
 
     def rule_set(self, spiece):
         if(spiece[0][:-1] == "bp"):
@@ -276,6 +287,7 @@ class CHESSBOARD:
         except:
             return
 
+    '''
     def can_capture(self, attacker, defender):
         capture = FALSE
         
@@ -301,14 +313,15 @@ class CHESSBOARD:
             print(attacker, "did not capture", defender, "with a roll of:", self.dice_val)
             # next turn/phase
             return
+    '''
 
-    def ret_piece_name(self, x):
+    def ret_piece_name(self, x): # method for returning piece name without number, ie wb1 returns wb, bk returns bk
         if(x[-1:].isnumeric()):
             return x[:-1]
         else:
             return x
 
-    def add_piece(self, img, location, piece):
+    def add_piece(self, img, location, piece): # places an image of a certain piece on the canvas
         self.canvas.delete("piece_selected")
         self.canvas.delete("move_locations")
         posx = int(location[0])
@@ -320,52 +333,90 @@ class CHESSBOARD:
             image=img, anchor="center", tag=piece)
         
     def del_piece(self, old_piece):
-        if(old_piece[0].isnumeric() != True):
-            x, y = int(old_piece[1][0]), int(old_piece[1][1])
-            self.canvas.delete(old_piece[0])
-            self.board[x][y] = ""
-        else:
+        # del_piece is invoked twice if an attacking move, once if a valid move
+        # on an attacking move, the second conditional is invoked first to delete the attacked piece's image and then recreate it in the graveyard
+        # and then a second time on the first conditional to delete the image of the piece being moved 
+        # and then clear it's former location from the 'board' logic array that shows all pieces names
+        # on a non-attacking move it only hits the first conditional
+        if(old_piece[0].isnumeric() != True): 
+            x, y = int(old_piece[1][0]), int(old_piece[1][1]) # select the coordinates of the piece that is being moved
+            self.canvas.delete(old_piece[0]) # delete the picture of the piece from the previous slot
+            self.board[x][y] = "" # clear the piece's former location from the logic array 'board' that shows all pieces names
+        else: 
             self.canvas.delete(self.board[int(old_piece[0])][int(old_piece[1])])
             print(self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
             img = eval("self." + self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
             if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "b"):
-                self.canvas.create_image(32 * (self.black_kill) -15, 675, 
+                self.canvas.create_image(32 * (self.black_kill) - 15, 675, 
                     image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
-                self.black_kill += 1
+                self.black_kill += 1.6
             if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "w"):
-                self.canvas.create_image(32 * (self.white_kill) -15, 50, 
+                self.canvas.create_image(32 * (self.white_kill) - 15, 50, 
                         image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
-                self.white_kill += 1
-                
+                self.white_kill += 1.6
+
+    def coord_convert(self, x): # converts the integer based arry method used in this program to A-H horizontally and 8-1 vertically
+        y = str(chr(int(x[0])+64))
+        z = str(abs(int(x[1]) - 9))
+        return y + z
+
+    def rules_window(self):
+        
+        global rule1, rule2
+        top = Toplevel()
+        top.title('Rule Set')
+        
+        rule1 = ImageTk.PhotoImage(Image.open("./data/misc/FL-MCR1.jpg").resize((680, 880), Image.ANTIALIAS))
+        rule2 = ImageTk.PhotoImage(Image.open("./data/misc/FL-MCR2.jpg").resize((680, 880), Image.ANTIALIAS))
+        #Label(top, image=rule1).pack()
+        #Label(top, image=rule2).pack()
+        Label(top, image=rule1).grid(row=0, column=0)
+        Label(top, image=rule2).grid(row=0, column=1)
+
 
 def on_click(event, chessboard):
+
+    chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db') #DB set up
+    chessboard.cursor = chessboard.conn.cursor()
+    chessboard.table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECE, PFROM, PTO, DEVCOORDS, PKILL, DICEROLL, KILLORNO);"""
+    chessboard.cursor.execute(chessboard.table)
+
+    # If the location clicked has a value of 1 or 2 on the valid_moves_array array (1 being free space, 2 being attack option)
     if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
         if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
-            chessboard.del_piece(str(chessboard.x1) + str(chessboard.y1))
-        # print(chessboard.selected_piece)
-        img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0]))
-        chessboard.del_piece(chessboard.selected_piece)
-        chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0])
-        chessboard.valid_moves_array = np.empty((9,9), dtype="<U10")
+            chessboard.del_piece(str(chessboard.x1) + str(chessboard.y1)) # invokes del_piece method for removing the attacked piece visually and recreating it in the graveyard
+        proper_loc_from = chessboard.coord_convert(chessboard.selected_piece[1]) # convert 'from' tile to Letter Number format
+        proper_loc_to = chessboard.coord_convert(str(chessboard.x1) + str(chessboard.y1)) # 'to' tile to Letter Number format
+        chessboard.cursor.execute("INSERT INTO HISTORY VALUES (?, ?, ?, ?, ?, ?, ?)", # insert data into db
+                                (chessboard.selected_piece[0], proper_loc_from, proper_loc_to, str(chessboard.x1) + str(chessboard.y1), 
+                                    chessboard.board[chessboard.x1][chessboard.y1], "", ""))
+        chessboard.conn.commit()
+        chessboard.conn.close()
+        img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0])) 
+        chessboard.del_piece(chessboard.selected_piece) # removes piece from it's former location visually and clears it's location from the 'board' array
+        chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0]) # recreates the piece visually in the new location
+        chessboard.valid_moves_array = np.empty((9,9), dtype="<U10") # clears the array of valid moves
         print(np.rot90(np.fliplr(chessboard.board)))
         return
 
-    chessboard.valid_moves_array = np.empty((9,9), dtype="<U10")
-    chessboard.canvas.delete("piece_selected")
-    chessboard.canvas.delete("move_locations")
+    # portion of on_click selecting pieces rather than moving them
+    chessboard.conn.close()
+    chessboard.valid_moves_array = np.empty((9,9), dtype="<U10") # clears the array of valid moves
+    chessboard.canvas.delete("piece_selected") # deletes the yellow highlight
+    chessboard.canvas.delete("move_locations") # deletes the green highlight
     chessboard.selected_piece = ["", ""]
-    x, y = event.x - 2, event.y - 100
-    if x > 0 and x <= 512 and y > 0 and y <= 512:
-        if(chessboard.board[chessboard.x1][chessboard.y1] != ""):
+    x, y = event.x - 2, event.y - 100 # adjusts the x and y clicks within the board itself
+    if x > 0 and x <= 512 and y > 0 and y <= 512: # check if the click is within the board
+        if(chessboard.board[chessboard.x1][chessboard.y1] != ""): # if the tile selected has a piece create a yellow rectangle around the tile highlighting it
             chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
                 ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
                 fill = chessboard.color3, tag = "piece_selected")
-            chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)]
-            dist = chessboard.rule_set(chessboard.selected_piece) #gather distance can move, team, piece name and corps
+            chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)] # piece name and location, ie wp7, 27
+            dist = chessboard.rule_set(chessboard.selected_piece) # gather distance can move, team, piece name and corps
             #print("dist:" , dist)
-            chessboard.valid_moves(dist)
+            chessboard.valid_moves(dist) # updates the valid_moves_array which shows what tiles the piece that's selected can move to
         piece = chessboard.board[chessboard.x1][chessboard.y1]
-        chessboard.canvas.tag_raise(piece)
+        chessboard.canvas.tag_raise(piece) # makes sure the piece isn't overlapped by highlighted tiles visually
         #print(np.rot90(np.fliplr(chessboard.board)))
     #print("chessboard.selected_piece:" , chessboard.selected_piece)
     print("", np.rot90(np.fliplr(chessboard.valid_moves_array)))
@@ -375,7 +426,7 @@ def on_click(event, chessboard):
     #chessboard.canvas.delete(piece)
     #chessboard.board[chessboard.x1][chessboard.y1] = ""
 
-def motion(event, chessboard):
+def motion(event, chessboard): # creates a unique yellow tile over the currently highlighted tile
     x, y = event.x - 2, event.y - 100
     over = math.ceil(x/64)+64 
     down = abs(math.ceil(y/64) - 9)
@@ -401,10 +452,40 @@ def main():
     icon = PhotoImage(file="./data/misc/mainIcon.png")
     root.iconphoto(False, icon)
     root.resizable(False, False)
+    chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db')
+    chessboard.cursor = chessboard.conn.cursor()
+    rules_button = TkinterCustomButton(text="Rules", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/2.32,
+                                            hover=True,
+                                            command=chessboard.rules_window)
+    history_button = TkinterCustomButton(text="History", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/2.32,
+                                            hover=True)
+    rules_button.place(relx=0.57, rely=0.26)
+    history_button.place(relx=0.57, rely=0.33)
+    try:
+        chessboard.cursor.execute('DROP TABLE HISTORY;')
+        chessboard.conn.commit
+    except:
+            print("No table")
+    chessboard.conn.close
     root.bind("<Motion>", lambda event: motion(event, chessboard))
     root.bind("<Button-1>", lambda event: on_click(event, chessboard))
     #root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
 
+    '''
     # frame = Frame(root)
     # frame.pack()
     # btRoll = Button(frame, text="Roll", command=chessboard.show_dice())
@@ -415,10 +496,9 @@ def main():
     chessboard.capture(5, 1)
     print("Bishop attacks Rook:")
     chessboard.capture(3, 4)
+    '''
 
     root.mainloop()
-
-    
 
 if __name__ == "__main__":
     main()
