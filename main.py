@@ -49,6 +49,8 @@ class CHESSBOARD:
         self.canvas.pack(padx=8, pady=8)
         self.draw_board()
         self.pieces()
+        self.corps_rectangles()
+        self.history_box()
         self.init_dice()
 
     def draw_board(self):
@@ -141,6 +143,24 @@ class CHESSBOARD:
         self.add_piece(self.wp, lwp6, "wp6")
         self.add_piece(self.wp, lwp7, "wp7")
         self.add_piece(self.wp, lwp8, "wp8")
+
+    def corps_rectangles(self):
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#a60314', tag = "corpsb1g")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#a60314', tag = "corpsb2g") # black red
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#a60314', tag = "corpsb3g")
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#00a835', tag = "corpsb1r")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#00a835', tag = "corpsb2r") # black green
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#00a835', tag = "corpsb3r")
+
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#a60314', tag = "corpsw1g")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#a60314', tag = "corpsw2g") # white red
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#a60314', tag = "corpsw3g")
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#00a835', tag = "corpsw1r")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#00a835', tag = "corpwb2r") # white green
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#00a835', tag = "corpwb3r")
+    
+    def history_box(self):
+        self.canvas.create_rectangle(525, 291, 913, 612, outline='black')
 
     def roll_value(self):
         self.dice_val = random.randrange(1,6)
