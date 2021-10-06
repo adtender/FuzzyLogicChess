@@ -24,6 +24,9 @@ class CHESSBOARD:
     turn = 0
     selected_piece = ["", ""]
     white_kill, black_kill = 1, 1
+    # note for heuristic
+    # have a variable called board weight which holds the sum of all piece weights on the board?
+    # may make heuristic calculations easier...
 
     # read excel file for capture info
     capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
