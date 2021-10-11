@@ -2,13 +2,10 @@ from tkinter import *
 import tkinter as tk
 import numpy as np
 import math
-import sys
 import random
 from PIL import ImageTk, Image
 from numpy.core.numerictypes import obj2sctype
 from data.misc.tkinter_custom_button import TkinterCustomButton
-import time
-import datetime
 import sqlite3
 import pandas as pd
 
@@ -31,16 +28,6 @@ class CHESSBOARD:
     conn = ""
     cursor = ""
     table = ""
-
-    '''
-    # read excel file for capture info
-    capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
-    capture_matrix = capture_data.to_numpy()
-    print(capture_matrix)
-    # print(capture_matrix[0][5])
-    # print(capture_matrix[0][2])
-    del capture_data
-    '''
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -170,34 +157,6 @@ class CHESSBOARD:
         # beginning image
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
         self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice1 , tag="dice")
-        
-    '''
-    def show_dice(self):
-        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
-        # using threading library to display images with delay like a randomized dice roll?
-        # lets try time sleep instead
-
-        for roll in range(0, self.fake_roll_val):
-            self.roll_value()
-            if self.dice_val == 1: 
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
-            elif self.dice_val == 2:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice2 , tag="dice")
-            elif self.dice_val == 3:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice3 , tag="dice")
-            elif self.dice_val == 4:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice")               
-            elif self.dice_val == 5:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice")
-            elif self.dice_val == 6:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
-        print("dice_val after show_dice:", self.dice_val)
-    '''
 
     def rule_set(self, spiece):
         if(spiece[0][:-1] == "bp"):
@@ -269,6 +228,7 @@ class CHESSBOARD:
 
     def valid_moves(self, dist):
 
+        '''
         nw, n, ne, e, se, s, sw, w = [1, -1, -1], [1, 0, 1], [1, 1, -1], [1, 1, 0], [1, 1, 1], [1, 0, -1], [1, -1, 1], [1, -1, 0]
         #spiece = [self.board[self.x1][self.y1], str(self.x1) + str(self.y1)]
         #team = dist[1]
@@ -281,8 +241,39 @@ class CHESSBOARD:
         self.valid_moves_arrayF(s, dist)
         self.valid_moves_arrayF(sw, dist)
         self.valid_moves_arrayF(w, dist)
+        '''
 
+        if(dist[2] == 'p'):
+            self.valid_moves_arrayP(dist)
+            return
+
+        elif(dist[2] == 'r'):
+            self.valid_moves_arrayP(dist)
+            return
+
+        else:
+            self.valid_moves_arrayE(dist)
+            return
+
+    def valid_moves_arrayP(self, dist):
+        tmodifier = 0
+        if (dist[1] == "w"): tmodifier = 1
+        if (dist[1] == "b"): tmodifier = -1
+        try:
+            for x in range(3):
+                return
+        except:
+            return
+
+    def valid_moves_arrayR(self, dist):
+        return
+
+    def valid_moves_arrayE(self, dist):
+        return
+
+    '''
     def valid_moves_arrayF(self, cr, dist):
+
         team = dist[1]
         spiece = ""
         try:
@@ -305,33 +296,6 @@ class CHESSBOARD:
                                 self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
                                 self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color4)
         except:
-            return
-
-    '''
-    def can_capture(self, attacker, defender):
-        capture = FALSE
-        
-        # based on current die roll
-        # access capture_matrix at [attacker][defender]
-        # check for dice_val in [attacker][defender]
-        # if true, set capture true
-        interaction = str(self.capture_matrix[attacker][defender])
-        if(str(self.dice_val) in interaction):
-            capture = TRUE
-        # print("dice_val:", self.dice_val)
-        # print(capture)
-        return capture
-
-    def capture(self, attacker, defender):
-        self.show_dice()
-        result = self.can_capture(attacker, defender)
-        if(result):
-            print(attacker, "successfully captured", defender, "with a roll of:", self.dice_val)
-            # next turn/phase
-            return 
-        else:
-            print(attacker, "did not capture", defender, "with a roll of:", self.dice_val)
-            # next turn/phase
             return
     '''
 
@@ -433,7 +397,7 @@ def on_click(event, chessboard):
                 fill = chessboard.color3, tag = "piece_selected")
             chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)] # piece name and location, ie wp7, 27
             dist = chessboard.rule_set(chessboard.selected_piece) # gather distance can move, team, piece name and corps
-            #print("dist:" , dist)
+            print("dist:" , dist)
             chessboard.valid_moves(dist) # updates the valid_moves_array which shows what tiles the piece that's selected can move to
         piece = chessboard.board[chessboard.x1][chessboard.y1]
         chessboard.canvas.tag_raise(piece) # makes sure the piece isn't overlapped by highlighted tiles visually
@@ -504,20 +468,6 @@ def main():
     root.bind("<Motion>", lambda event: motion(event, chessboard))
     root.bind("<Button-1>", lambda event: on_click(event, chessboard))
     #root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
-
-    '''
-    # frame = Frame(root)
-    # frame.pack()
-    # btRoll = Button(frame, text="Roll", command=chessboard.show_dice())
-    # btRoll.pack(side = RIGHT)
-    print("King attacks pawn, Should be 1:")
-    chessboard.capture(0, 5)
-    print("Pawn attacks queen")
-    chessboard.capture(5, 1)
-    print("Bishop attacks Rook:")
-    chessboard.capture(3, 4)
-    '''
-
     root.mainloop()
 
 if __name__ == "__main__":
