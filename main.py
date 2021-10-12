@@ -257,11 +257,17 @@ class CHESSBOARD:
 
     def valid_moves_arrayP(self, dist):
         tmodifier = 0
-        if (dist[1] == "w"): tmodifier = 1
-        if (dist[1] == "b"): tmodifier = -1
+        if (dist[1] == "w"): tmodifier = -1
+        if (dist[1] == "b"): tmodifier = 1
         try:
-            for x in range(3):
-                return
+            for x in range(-1, 2, 1):
+                xsearch = str(self.x1 + x)
+                ysearch = str(self.y1 + tmodifier)
+                xysearch = xsearch + ysearch
+                if (self.bounds_check(xsearch) == True):
+                    if (self.bounds_check(ysearch) == True):
+                        print("xysearch: ", xysearch)
+                    
         except:
             return
 
@@ -270,6 +276,10 @@ class CHESSBOARD:
 
     def valid_moves_arrayE(self, dist):
         return
+
+    def bounds_check(self, x):
+        if(int(x[0][0]) > 0 and int(x[0][0]) < 9):
+            return True
 
     '''
     def valid_moves_arrayF(self, cr, dist):
