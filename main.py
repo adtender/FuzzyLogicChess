@@ -257,19 +257,23 @@ class CHESSBOARD:
 
     def valid_moves_arrayP(self, dist):
         tmodifier = 0
-        if (dist[1] == "w"): tmodifier = -1
-        if (dist[1] == "b"): tmodifier = 1
-        try:
-            for x in range(-1, 2, 1):
-                xsearch = str(self.x1 + x)
-                ysearch = str(self.y1 + tmodifier)
-                xysearch = xsearch + ysearch
-                if (self.bounds_check(xsearch) == True):
-                    if (self.bounds_check(ysearch) == True):
-                        print("xysearch: ", xysearch)
-                    
-        except:
-            return
+        team = dist[1]
+        if (team == "w"): tmodifier = -1
+        if (team == "b"): tmodifier = 1
+        #try:
+        for x in range(-1, 2, 1):
+            xsearch = int(self.x1 + x)
+            ysearch = int(self.y1 + tmodifier)
+            if (self.bounds_check(xsearch) == True):
+                if (self.bounds_check(ysearch) == True):
+                    if (self.board[xsearch][ysearch] != "" and self.board[xsearch][ysearch][0] != team):
+                        self.valid_moves_array[xsearch][ysearch] = 2
+                        self.highlight_green(xsearch, ysearch, self.color5)
+                    elif(self.board[xsearch][ysearch] == ""):
+                        self.valid_moves_array[xsearch][ysearch] = 1
+                        self.highlight_green(xsearch, ysearch, self.color4)     
+        #except:
+        #    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
     def valid_moves_arrayR(self, dist):
         return
@@ -278,7 +282,7 @@ class CHESSBOARD:
         return
 
     def bounds_check(self, x):
-        if(int(x[0][0]) > 0 and int(x[0][0]) < 9):
+        if(x > 0 and x < 9):
             return True
 
     '''
