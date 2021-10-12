@@ -3,6 +3,8 @@ import tkinter as tk
 import numpy as np
 import math
 import random
+import time
+import gpio
 from PIL import ImageTk, Image
 from numpy.core.numerictypes import obj2sctype
 from data.misc.tkinter_custom_button import TkinterCustomButton
@@ -22,6 +24,7 @@ class CHESSBOARD:
     dice_val = "5"
     fake_roll_val, fake_roll_time_interval = 5, 1
     turn = 0
+    rookchoice = 0
     selected_piece = ["", ""]
     white_kill, black_kill = 1, 1
     db_loc = './data/db/'
@@ -228,11 +231,8 @@ class CHESSBOARD:
 
     def valid_moves(self, dist):
 
-        '''
+        
         nw, n, ne, e, se, s, sw, w = [1, -1, -1], [1, 0, 1], [1, 1, -1], [1, 1, 0], [1, 1, 1], [1, 0, -1], [1, -1, 1], [1, -1, 0]
-        #spiece = [self.board[self.x1][self.y1], str(self.x1) + str(self.y1)]
-        #team = dist[1]
-        #spiece = ""
         self.valid_moves_arrayF(nw, dist)
         self.valid_moves_arrayF(n, dist)
         self.valid_moves_arrayF(ne, dist)
@@ -241,51 +241,93 @@ class CHESSBOARD:
         self.valid_moves_arrayF(s, dist)
         self.valid_moves_arrayF(sw, dist)
         self.valid_moves_arrayF(w, dist)
-        '''
+        
 
         if(dist[2] == 'p'):
             self.valid_moves_arrayP(dist)
-            return
 
         elif(dist[2] == 'r'):
-            self.valid_moves_arrayP(dist)
-            return
+            self.valid_moves_arrayR(dist)
+
+        elif(dist[2] == "kn"):
+            self.valid_moves_arrayF(nw, dist)
+            self.valid_moves_arrayF(n, dist)
+            self.valid_moves_arrayF(ne, dist)
+            self.valid_moves_arrayF(e, dist)
+            self.valid_moves_arrayF(se, dist)
+            self.valid_moves_arrayF(s, dist)
+            self.valid_moves_arrayF(sw, dist)
+            self.valid_moves_arrayF(w, dist)
+            #self.valid_moves_arrayKn(dist)
 
         else:
             self.valid_moves_arrayE(dist)
-            return
+            
 
     def valid_moves_arrayP(self, dist):
         tmodifier = 0
         team = dist[1]
         if (team == "w"): tmodifier = -1
         if (team == "b"): tmodifier = 1
-        #try:
-        for x in range(-1, 2, 1):
-            xsearch = int(self.x1 + x)
-            ysearch = int(self.y1 + tmodifier)
-            if (self.bounds_check(xsearch) == True):
-                if (self.bounds_check(ysearch) == True):
-                    if (self.board[xsearch][ysearch] != "" and self.board[xsearch][ysearch][0] != team):
-                        self.valid_moves_array[xsearch][ysearch] = 2
-                        self.highlight_green(xsearch, ysearch, self.color5)
-                    elif(self.board[xsearch][ysearch] == ""):
-                        self.valid_moves_array[xsearch][ysearch] = 1
-                        self.highlight_green(xsearch, ysearch, self.color4)     
-        #except:
-        #    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        try:
+            for x in range(-1, 2, 1):
+                xsearch = int(self.x1 + x)
+                ysearch = int(self.y1 + tmodifier)
+                if (self.bounds_check(xsearch) == True):
+                    if (self.bounds_check(ysearch) == True): # if it's within the bounds of the board
+                        if (self.board[xsearch][ysearch] != "" and self.board[xsearch][ysearch][0] != team): # not empty and not on same team
+                            self.valid_moves_array[xsearch][ysearch] = 2 
+                            self.highlight_green(xsearch, ysearch, self.color5) # highlight red
+                        elif(self.board[xsearch][ysearch] == ""): # empty spot
+                            self.valid_moves_array[xsearch][ysearch] = 1
+                            self.highlight_green(xsearch, ysearch, self.color4) # highlight green
+        except Exception as e:
+            print("Error in valid_moves_arrayP: ", e)
 
     def valid_moves_arrayR(self, dist):
+        self.valid_moves_team_check(dist)
+        team = dist[1]
+        #try:
+        
+        for x in range(0, 3, 1):
+            xsearch = int(self.x1 + x)
+            if (self.bounds_check(xsearch) == True):
+                for y in range(0, 3, 1):
+                    ysearch = int(self.y1 + y) 
+                    if (self.bounds_check(ysearch) == True):
+                        print(1, xsearch, ysearch)
+
+        for x in range(0, 3, 1):
+            xsearch = int(self.x1 + x)
+            if (self.bounds_check(xsearch) == True):
+                for y in range(-1, -3, -1):
+                    ysearch = int(self.y1 + y) 
+                    if (self.bounds_check(ysearch) == True):
+                        print(2, xsearch, ysearch)
+             
+            
+        #except Exception as e:
+        #    print("Error in valid_moves_arrayP: ", e)
+
+    def valid_moves_arrayKn(self, dist):
         return
 
     def valid_moves_arrayE(self, dist):
         return
 
+    def valid_moves_team_check(self, dist):
+        team = dist[1]
+        for x in range(1, 9, 1):
+            for y in range(1, 9, 1):
+                if(self.board[x][y] != ""):
+                    if (self.board[x][y][0] == team):
+                        self.valid_moves_array[x][y] = 0
+
     def bounds_check(self, x):
         if(x > 0 and x < 9):
             return True
 
-    '''
+    
     def valid_moves_arrayF(self, cr, dist):
 
         team = dist[1]
@@ -311,7 +353,7 @@ class CHESSBOARD:
                                 self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color4)
         except:
             return
-    '''
+    
 
     def ret_piece_name(self, x): # method for returning piece name without number, ie wb1 returns wb, bk returns bk
         if(x[-1:].isnumeric()):
@@ -371,17 +413,37 @@ class CHESSBOARD:
         Label(top, image=rule1).grid(row=0, column=0)
         Label(top, image=rule2).grid(row=0, column=1)
 
+    def rookT(self):
+        window = tk.Toplevel()
+        tk.Button(window,text="Charge", command= self.rook_charge).grid()
+        tk.Button(window,text="Fire", command= self.rook_fire).grid()
+
+    def rook_charge(self):
+        self.rookchoice = 1
+    
+    def rook_fire(self):
+        self.rookchoice = 2
+
+    def rook_check(self):
+        if(self.rookchoice == 1 or self.rookchoice == 2):
+            return True
+        else:
+            return False
 
 def on_click(event, chessboard):
 
+    rook = False
     chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db') #DB set up
     chessboard.cursor = chessboard.conn.cursor()
-    chessboard.table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECE, PFROM, PTO, DEVCOORDS, PKILL, DICEROLL, KILLORNO);"""
+    chessboard.table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECE, PFROM, PTO, DEVCOORDS, PATTACKED, DICEROLL, KILLORNO);"""
     chessboard.cursor.execute(chessboard.table)
 
     # If the location clicked has a value of 1 or 2 on the valid_moves_array array (1 being free space, 2 being attack option)
+    
     if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
-        if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
+        if(chessboard.selected_piece[0][1] == "r"): rook = True
+        if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2) and rook == False):
+            # TODO: add rook kill conditional
             chessboard.del_piece(str(chessboard.x1) + str(chessboard.y1)) # invokes del_piece method for removing the attacked piece visually and recreating it in the graveyard
         proper_loc_from = chessboard.coord_convert(chessboard.selected_piece[1]) # convert 'from' tile to Letter Number format
         proper_loc_to = chessboard.coord_convert(str(chessboard.x1) + str(chessboard.y1)) # 'to' tile to Letter Number format
@@ -389,12 +451,42 @@ def on_click(event, chessboard):
                                 (chessboard.selected_piece[0], proper_loc_from, proper_loc_to, str(chessboard.x1) + str(chessboard.y1), 
                                     chessboard.board[chessboard.x1][chessboard.y1], "", ""))
         chessboard.conn.commit()
-        chessboard.conn.close()
         img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0])) 
-        chessboard.del_piece(chessboard.selected_piece) # removes piece from it's former location visually and clears it's location from the 'board' array
-        chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0]) # recreates the piece visually in the new location
+        if(rook == True and chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1)):
+            chessboard.del_piece(chessboard.selected_piece) # removes piece from it's former location visually and clears it's location from the 'board' array
+            chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0]) # recreates the piece visually in the new location
+        elif(rook == True and chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
+            x, y = chessboard.x1, chessboard.y1
+            #test = chessboard.rook()
+            chessboard.rookT()
+            time.sleep(1)
+            while True:
+                print("aaa")
+                if(chessboard.rookchoice != 0):
+                    break
+                time.sleep(3)
+            #command = input("Charge (c) or Fire (f): ")
+            
+
+            if (chessboard.rookchoice == 1):
+                chessboard.del_piece(chessboard.selected_piece)
+                chessboard.add_piece(img, str(x) + str(y), chessboard.selected_piece[0])
+                chessboard.rookchoice = 0
+                
+            if (chessboard.rookchoice == 2):
+                chessboard.cursor.execute("UPDATE HISTORY set PTO = ? WHERE PTO = (SELECT MAX(PTO) FROM HISTORY)", (proper_loc_from,))
+                chessboard.conn.commit()
+                chessboard.del_piece(str(x) + str(y))
+                chessboard.rookchoice = 0
+                
+            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+                
+        elif(rook == False):
+            chessboard.del_piece(chessboard.selected_piece) # removes piece from it's former location visually and clears it's location from the 'board' array
+            chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0]) # recreates the piece visually in the new location
         chessboard.valid_moves_array = np.empty((9,9), dtype="<U10") # clears the array of valid moves
         print(np.rot90(np.fliplr(chessboard.board)))
+        chessboard.conn.close()
         return
 
     # portion of on_click selecting pieces rather than moving them
