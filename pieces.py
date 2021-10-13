@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+from collections import deque 
 
 
 class Piece:
@@ -9,9 +10,10 @@ class Piece:
     team = 0        # -1 for white, 1 for black
     corps = 0       # 0 left bishop, 1 king, 2 right king
     active = 0      # 0 dead, 1 alive
-    availMoves = []  ### changed these, use self.availMoves.append([_, _])
-    availAttacks = [] ### changed these, use self.availAttacks.append([_, _])
+    # availMoves = []
+    # availAttacks = []
     location = [-1, -1]
+    moveDist = 0
     # chessboard = parent # piece should have parent chessboard
     # possibly include update board function
 
@@ -21,20 +23,28 @@ class Piece:
         self.team = team
         self.corps = corps
         self.location = loc
+        self.availMoves = []
+        self.availAttacks = []
+
+        if(type == "h"):
+            self.moveDist = 4
+        elif(type == "q" or type == "k"):
+            self.moveDist = 3
+        elif(type == "b"):
+            self.moveDist = 2
         # self.chessboard = board
 
     def check_moves(self, chessboard):
         # function to check available moves. updates avail_moves array
-        # moves array is a chessboard that shows available moves right now 
-        # Will show captures as piece values in future
+        # moves array is a chessboard that shows available moves right now. Will show captures as piece values in future
         moves = copy.copy(chessboard)
         
-        # self.location is array of 2 numbers [x, y] that gives piece location
-
+        # self.location is array of 2 numbers [y, x] that gives piece location
         pieceLocY = self.location[0]
         pieceLocX = self.location[1]
         team = self.team
 
+        
 
         if(self.pieceType == 'p'):
             rowToCheck = pieceLocY + self.team
@@ -49,14 +59,49 @@ class Piece:
                     # a legal move is represented by the number 'legal' Can change this later if confusing
                     # will likely need two for loop sets, one for black pieces, one for white. 
                     # Can solve this by using piece ID instead of number, and checking for team based on that
-                    moves[rowToCheck][col] = "legal"
+                    moves[rowToCheck][col] = "lg"
                     self.availMoves.append([rowToCheck, col])
+                if (isinstance(moves[rowToCheck][col], Piece) and moves[rowToCheck][col].team is not self.team):
+                    self.availAttacks.append([rowToCheck, col])
+                    self.availMoves.append([rowToCheck, col])
+        
+        if(self.pieceType == 'b' or self.pieceType == 'k' or self.pieceType == 'q' or self.pieceType == 'h'):
+            
+            R, C = 8, 8
 
-        if(self.pieceType == 'h'):
-            print()
-        if(self.pieceType == 'b'):
-            print()
+            start = [pieceLocY, pieceLocX]
+
+            # use queue to track moves
+            queue = deque()
+            queue.appendleft((start[0], start[1], 0))
+            directions = [[0, 1], [0, -1], [1, 0], [-1, 0], [-1, 1], [1, 1], [1, -1], [-1, -1]]
+            visited = [[False] * C for _ in range(R)]
+
+
+            while len(queue) != 0:
+                coord = queue.pop()
+                visited[coord[0]][coord[1]] = True
+
+                for dir in directions:
+                    nr, nc = coord[0]+dir[0], coord[1]+dir[1]
+                    if (nr < 0 or nr >= R or nc < 0 or nc >= C or 
+                    (isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is self.team) 
+                    or visited[nr][nc]): continue 
+                    queue.appendleft((nr, nc, coord[2]+1))
+                    if(queue[0][2] <= self.moveDist):
+                        
+                        self.availMoves.append([nr,nc])
+                        # print(moves[nr][nc].team)
+                        if(isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
+                            self.availAttacks.append([nr, nc])
+                        else:
+                            moves[nr][nc] = "lg"
+                    # if(self.pieceType == 'h' and queue[0][2] == self.moveDist and moves[nr][nc].team is not self.team):
+                     #   self.availAttacks.append([nr, nc])
+
+        
         if(self.pieceType == 'r'):
+            # TODO: hops over enemy pieces, shouldnt be able to
             pieceLocX = self.location[0]
             pieceLocY = self.location[1]
             #print(moves[pieceLocX][pieceLocY].pieceType)
@@ -95,15 +140,10 @@ class Piece:
                             self.availAttacks.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
                         self.availMoves.append([xSearch, ySearch])
-            
-        if(self.pieceType == 'k'):
-            print()
-        if(self.pieceType == 'q'):
-            print()
 
-        print(self.availMoves, "availMoves")
-        print(self.availAttacks, "availAttacks")
-        
+        print("AvailMoves: ", self.availMoves)
+        print("AvailAttacks: ", self.availAttacks)
+
         return moves
 
         '''
@@ -153,11 +193,12 @@ piecesBoard = np.empty((8, 8), dtype=Piece)
 # [Row, Column], [Down, Over]
 
 # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
+
 piecesBoard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
-#piecesBoard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1]) # commented out to test availAttacks on wr1
-piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2])
-piecesBoard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns
-piecesBoard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4])
+piecesBoard[4, 0] = Piece("wp2", "p", -1, 1, [4, 0]) #[6, 1]
+piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
+piecesBoard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns [6, 3]
+piecesBoard[3, 4] = Piece("wp5", "p", -1, 2, [3, 4]) 
 piecesBoard[6, 5] = Piece("wp6", "p", -1, 3, [6, 5])
 piecesBoard[6, 6] = Piece("wp7", "p", -1, 3, [6, 6])
 piecesBoard[6, 7] = Piece("wp8", "p", -1, 3, [6, 7])
@@ -171,16 +212,16 @@ piecesBoard[7, 5] = Piece("wb2", "b", -1, 3, [7, 5])
 piecesBoard[7, 4] = Piece("wk1", "k", -1, 2, [7, 4])
 piecesBoard[7, 3] = Piece("wq1", "q", -1, 2, [7, 3])
 
-piecesBoard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
-piecesBoard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
+piecesBoard[5, 0] = Piece("bp1", "p", 1, 1, [5, 0])
+piecesBoard[3, 1] = Piece("bp2", "p", 1, 1, [3, 1]) # [1, 1]
 piecesBoard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2])
 piecesBoard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
-piecesBoard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
+piecesBoard[6,1 ] = Piece("bp5", "p", 1, 2, [6, 1]) #[1, 4]
 piecesBoard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
 piecesBoard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6])
 piecesBoard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7])
 
-piecesBoard[5, 0] = Piece("br1", "r", 1, 2, [5, 0]) # dev change: initially 0, 0
+piecesBoard[0, 0] = Piece("br1", "r", 1, 2, [0, 0])
 piecesBoard[0, 7] = Piece("br2", "r", 1, 2, [0, 7])
 piecesBoard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1])
 piecesBoard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6]) # black back row
@@ -190,6 +231,13 @@ piecesBoard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
 piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
 
 
-#print(piecesBoard)
+# print(piecesBoard)
 
-print("----------------------\n", piecesBoard[6, 3].check_moves(piecesBoard)) # test check_moves print statement
+# print("----------------------\n", piecesBoard[6, 7].check_moves(piecesBoard)) # test check_moves print statement
+
+print("White Rook 1----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement
+print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
+print("Wq1---------------------\n", piecesBoard[7, 3].check_moves(piecesBoard))
+print("Wk1----------------------\n", piecesBoard[7, 4].check_moves(piecesBoard))
+print("Wp6----------------------\n", piecesBoard[6, 5].check_moves(piecesBoard))
+print("Wb1----------------------\n", piecesBoard[7, 2].check_moves(piecesBoard))
