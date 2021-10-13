@@ -9,8 +9,8 @@ class Piece:
     team = 0        # -1 for white, 1 for black
     corps = 0       # 0 left bishop, 1 king, 2 right king
     active = 0      # 0 dead, 1 alive
-    availMoves = [[0,0], [-1,-1]]
-    availAttacks = [[0,0], [-1,-1]]
+    availMoves = []  ### changed these, use self.availMoves.append([_, _])
+    availAttacks = [] ### changed these, use self.availAttacks.append([_, _])
     location = [-1, -1]
     # chessboard = parent # piece should have parent chessboard
     # possibly include update board function
@@ -29,10 +29,13 @@ class Piece:
         moves = copy.copy(chessboard)
         
         # self.location is array of 2 numbers [x, y] that gives piece location
-        pieceLocY = self.location[0]
-        pieceLocX = self.location[1]
 
-        
+        #pieceLocY = self.location[0]
+        #pieceLocX = self.location[1]
+        pieceLocX = self.location[0]   # had to change this for it to work
+        pieceLocY = self.location[1]   # fairly certain it broke pawns
+        team = self.team
+
 
         if(self.pieceType == 'p'):
             rowToCheck = pieceLocY + self.team
@@ -54,9 +57,46 @@ class Piece:
         if(self.pieceType == 'b'):
             print()
         if(self.pieceType == 'r'):
-            # check for moves, add into availmoves
-            # loop through availmoves, check if move is an attack, add into availAttacks and remove from moves
-            print()
+            pieceLocX = self.location[0]
+            pieceLocY = self.location[1]
+            #print(moves[pieceLocX][pieceLocY].pieceType)
+            print("Selected piece location: ", pieceLocX, pieceLocY)
+            cr =   [[0, -1, 1],  # N
+                    [1, -1, 1],  # NE
+                    [1, 0, 1],   # E
+                    [1, 1, 1],   # SE
+                    [0, 1, 1],   # S
+                    [-1, 1, 1],  # SW
+                    [-1, 0, 1],  # W
+                    [-1, -1, 1]] # NW
+
+            for col in range (1, 3): # counter clockwise search that starts at the center and radiates out 2
+                #print("aaaaaa", len(col[0]))
+                for x, i in enumerate(cr):
+                    if (col == 2): x = x + 8
+                    #print(x)
+                    xSearch = pieceLocX + (col * i[1])
+                    ySearch = pieceLocY + (col * i[0])
+                    if (xSearch < 0 or xSearch > 7 or ySearch < 0 or ySearch > 7): # break if out of bounds
+                        continue
+
+                    #if piece is there, if on first ring of outward radiation, if on same team
+                    if (moves[xSearch][ySearch] != None and col != 2 and moves[xSearch][ySearch].team == team):
+                        i[2] = 0 # block availMoves for further rings
+                    #if piece is there, if on first ring of outward radiation, if NOT on same team
+                    if (moves[xSearch][ySearch] != None and col != 2 and moves[xSearch][ySearch].team != team):
+                        self.availMoves.append([xSearch, ySearch])
+                        self.availAttacks.append([xSearch, ySearch])
+                    if (moves[xSearch][ySearch] == None and col != 2): # if no piece on first outward radiation
+                        self.availMoves.append([xSearch, ySearch])
+
+                    if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 0 and moves[xSearch][ySearch].team != team):
+                        self.availAttacks.append([xSearch, ySearch])
+                    if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
+                        self.availMoves.append([xSearch, ySearch])
+            print(self.availMoves, "availMoves")
+            print(self.availAttacks, "availAttacks")
+            
         if(self.pieceType == 'k'):
             print()
         if(self.pieceType == 'q'):
@@ -108,10 +148,11 @@ class Piece:
 
 piecesBoard = np.empty((8, 8), dtype=Piece)
 
-# [Row, Column]
+# [Row, Column], [Down, Over]
 
+# id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
 piecesBoard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
-piecesBoard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1])
+#piecesBoard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1]) # commented out to test availAttacks on wr1
 piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2])
 piecesBoard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns
 piecesBoard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4])
@@ -137,7 +178,7 @@ piecesBoard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
 piecesBoard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6])
 piecesBoard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7])
 
-piecesBoard[0, 0] = Piece("br1", "r", 1, 2, [0, 0])
+piecesBoard[5, 0] = Piece("br1", "r", 1, 2, [5, 0]) # dev change: initially 0, 0
 piecesBoard[0, 7] = Piece("br2", "r", 1, 2, [0, 7])
 piecesBoard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1])
 piecesBoard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6]) # black back row
@@ -147,6 +188,6 @@ piecesBoard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
 piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
 
 
-print(piecesBoard)
+#print(piecesBoard)
 
-print("----------------------\n", piecesBoard[6, 7].check_moves(piecesBoard)) # test check_moves print statement
+print("----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement

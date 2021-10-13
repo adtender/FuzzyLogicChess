@@ -255,6 +255,7 @@ class CHESSBOARD:
         self.valid_moves_arrayF(w, dist)
 
     def valid_moves_arrayF(self, cr, dist):
+        print("cr", cr[1], cr[2], dist[0])
         team = dist[1]
         spiece = ""
         try:
