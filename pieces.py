@@ -7,25 +7,18 @@ class Piece:
     team = 0        # 0 for white, 1 for black
     corps = 0       # 0 left bishop, 1 king, 2 right king
     active = 0      # 0 dead, 1 alive
-    avail_moves = [[0,0], [-1,-1]]
+    availMoves = [[0,0], [-1,-1]]
+    availAttacks = [[0,0], [-1,-1]]
     location = [-1, -1]
     # chessboard = parent # piece should have parent chessboard
     # possibly include update board function
 
-
-    # possible
-    # id is in binary
-    # first 2 bits signifies team (01 = white, 10 = black)
-    # second 3 bits signifies corps (100=left, 010=king, 001=right)
-    # third 3 bits signifies piece (001=king, 010=pawn, 011=knight, 100=bishop, 101=rook, 110=queen)
-
-
-    #
-    def __init__(self, id, team, corps, loc):
+    def __init__(self, id, team, corps, loc, board):
         self.pieceID = id
         self.team = team
         self.corps = corps
         self.location = loc
+        self.chessboard = board
 
     def check_moves(self, chessboard):
         # function to check available moves. updates avail_moves array
@@ -46,12 +39,14 @@ class Piece:
                     # Can solve this by using piece ID instead of number, and checking for team based on that
                     moves[row][col] = 10
                     print("legal move")
-        self.avail_moves = moves
+        self.availMoves = moves
         return moves
 
     def move(self, chessboard):
         # function that moves the piece
         # returns a new board
+
+
         return
 
     def capture(self, defender):
