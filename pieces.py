@@ -25,15 +25,14 @@ class Piece:
 
     def check_moves(self, chessboard):
         # function to check available moves. updates avail_moves array
-        # moves array is a chessboard that shows available moves right now. Will show captures as piece values in future
+        # moves array is a chessboard that shows available moves right now 
+        # Will show captures as piece values in future
         moves = copy.copy(chessboard)
         
         # self.location is array of 2 numbers [x, y] that gives piece location
 
-        #pieceLocY = self.location[0]
-        #pieceLocX = self.location[1]
-        pieceLocX = self.location[0]   # had to change this for it to work
-        pieceLocY = self.location[1]   # fairly certain it broke pawns
+        pieceLocY = self.location[0]
+        pieceLocX = self.location[1]
         team = self.team
 
 
@@ -52,6 +51,7 @@ class Piece:
                     # Can solve this by using piece ID instead of number, and checking for team based on that
                     moves[rowToCheck][col] = "legal"
                     self.availMoves.append([rowToCheck, col])
+
         if(self.pieceType == 'h'):
             print()
         if(self.pieceType == 'b'):
@@ -90,17 +90,19 @@ class Piece:
                     if (moves[xSearch][ySearch] == None and col != 2): # if no piece on first outward radiation
                         self.availMoves.append([xSearch, ySearch])
 
-                    if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 0 and moves[xSearch][ySearch].team != team):
-                        self.availAttacks.append([xSearch, ySearch])
+                    if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 0 
+                        and moves[xSearch][ySearch].team != team):
+                            self.availAttacks.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
                         self.availMoves.append([xSearch, ySearch])
-            print(self.availMoves, "availMoves")
-            print(self.availAttacks, "availAttacks")
             
         if(self.pieceType == 'k'):
             print()
         if(self.pieceType == 'q'):
             print()
+
+        print(self.availMoves, "availMoves")
+        print(self.availAttacks, "availAttacks")
         
         return moves
 
@@ -190,4 +192,4 @@ piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
 
 #print(piecesBoard)
 
-print("----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement
+print("----------------------\n", piecesBoard[6, 3].check_moves(piecesBoard)) # test check_moves print statement
