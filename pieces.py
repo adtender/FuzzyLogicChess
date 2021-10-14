@@ -101,11 +101,8 @@ class Piece:
 
         
         if(self.pieceType == 'r'):
-            # TODO: hops over enemy pieces, shouldnt be able to
             pieceLocX = self.location[0]
             pieceLocY = self.location[1]
-            #print(moves[pieceLocX][pieceLocY].pieceType)
-            print("Selected piece location: ", pieceLocX, pieceLocY)
             cr =   [[0, -1, 1],  # N
                     [1, -1, 1],  # NE
                     [1, 0, 1],   # E
@@ -116,10 +113,8 @@ class Piece:
                     [-1, -1, 1]] # NW
 
             for col in range (1, 3): # counter clockwise search that starts at the center and radiates out 2
-                #print("aaaaaa", len(col[0]))
                 for x, i in enumerate(cr):
                     if (col == 2): x = x + 8
-                    #print(x)
                     xSearch = pieceLocX + (col * i[1])
                     ySearch = pieceLocY + (col * i[0])
                     if (xSearch < 0 or xSearch > 7 or ySearch < 0 or ySearch > 7): # break if out of bounds
@@ -132,6 +127,7 @@ class Piece:
                     if (moves[xSearch][ySearch] != None and col != 2 and moves[xSearch][ySearch].team != team):
                         self.availMoves.append([xSearch, ySearch])
                         self.availAttacks.append([xSearch, ySearch])
+                        i[2] = 0
                     if (moves[xSearch][ySearch] == None and col != 2): # if no piece on first outward radiation
                         self.availMoves.append([xSearch, ySearch])
 
@@ -140,6 +136,9 @@ class Piece:
                             self.availAttacks.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
                         self.availMoves.append([xSearch, ySearch])
+
+        self.availMoves = self.remove_deuplicates(self.availMoves)
+        self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
         print("AvailMoves: ", self.availMoves)
         print("AvailAttacks: ", self.availAttacks)
@@ -163,6 +162,9 @@ class Piece:
         self.availMoves = moves
         return moves
         '''
+
+    def remove_deuplicates(self, lst):
+        return [t for t in (set(tuple(i) for i in lst))]
 
     def move(self, chessboard):
         # function that moves the piece
@@ -195,10 +197,10 @@ piecesBoard = np.empty((8, 8), dtype=Piece)
 # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
 
 piecesBoard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
-piecesBoard[4, 0] = Piece("wp2", "p", -1, 1, [4, 0]) #[6, 1]
+piecesBoard[3, 1] = Piece("wp2", "p", -1, 1, [3, 1]) 
 piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
-piecesBoard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns [6, 3]
-piecesBoard[3, 4] = Piece("wp5", "p", -1, 2, [3, 4]) 
+piecesBoard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns
+piecesBoard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4]) 
 piecesBoard[6, 5] = Piece("wp6", "p", -1, 3, [6, 5])
 piecesBoard[6, 6] = Piece("wp7", "p", -1, 3, [6, 6])
 piecesBoard[6, 7] = Piece("wp8", "p", -1, 3, [6, 7])
@@ -212,11 +214,11 @@ piecesBoard[7, 5] = Piece("wb2", "b", -1, 3, [7, 5])
 piecesBoard[7, 4] = Piece("wk1", "k", -1, 2, [7, 4])
 piecesBoard[7, 3] = Piece("wq1", "q", -1, 2, [7, 3])
 
-piecesBoard[5, 0] = Piece("bp1", "p", 1, 1, [5, 0])
-piecesBoard[3, 1] = Piece("bp2", "p", 1, 1, [3, 1]) # [1, 1]
+piecesBoard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
+piecesBoard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
 piecesBoard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2])
 piecesBoard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
-piecesBoard[6,1 ] = Piece("bp5", "p", 1, 2, [6, 1]) #[1, 4]
+piecesBoard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
 piecesBoard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
 piecesBoard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6])
 piecesBoard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7])
@@ -235,9 +237,9 @@ piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
 
 # print("----------------------\n", piecesBoard[6, 7].check_moves(piecesBoard)) # test check_moves print statement
 
-print("White Rook 1----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement
 print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
-print("Wq1---------------------\n", piecesBoard[7, 3].check_moves(piecesBoard))
-print("Wk1----------------------\n", piecesBoard[7, 4].check_moves(piecesBoard))
-print("Wp6----------------------\n", piecesBoard[6, 5].check_moves(piecesBoard))
-print("Wb1----------------------\n", piecesBoard[7, 2].check_moves(piecesBoard))
+#print("Wq1---------------------\n", piecesBoard[7, 3].check_moves(piecesBoard))
+#print("Wk1----------------------\n", piecesBoard[7, 4].check_moves(piecesBoard))
+#print("Wp6----------------------\n", piecesBoard[6, 5].check_moves(piecesBoard))
+#print("Wb1----------------------\n", piecesBoard[7, 2].check_moves(piecesBoard))
+#print("White Rook 1----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement
