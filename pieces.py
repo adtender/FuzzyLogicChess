@@ -10,8 +10,6 @@ class Piece:
     team = 0        # -1 for white, 1 for black
     corps = 0       # 0 left bishop, 1 king, 2 right king
     active = 0      # 0 dead, 1 alive
-    # availMoves = []
-    # availAttacks = []
     location = [-1, -1]
     moveDist = 0
     # chessboard = parent # piece should have parent chessboard
@@ -91,7 +89,6 @@ class Piece:
                     if(queue[0][2] <= self.moveDist):
                         
                         self.availMoves.append([nr,nc])
-                        # print(moves[nr][nc].team)
                         if(isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
                             self.availAttacks.append([nr, nc])
                         else:
@@ -190,12 +187,13 @@ class Piece:
     def __repr__(self):
         return self.pieceID
 
-piecesBoard = np.empty((8, 8), dtype=Piece)
+'''piecesBoard = np.empty((8, 8), dtype=Piece)'''
 
 # [Row, Column], [Down, Over]
 
 # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
 
+'''
 piecesBoard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
 piecesBoard[3, 1] = Piece("wp2", "p", -1, 1, [3, 1]) 
 piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
@@ -231,13 +229,14 @@ piecesBoard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2])
 piecesBoard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5])
 piecesBoard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
 piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
+'''
 
 
 # print(piecesBoard)
 
 # print("----------------------\n", piecesBoard[6, 7].check_moves(piecesBoard)) # test check_moves print statement
 
-print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
+#print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
 #print("Wq1---------------------\n", piecesBoard[7, 3].check_moves(piecesBoard))
 #print("Wk1----------------------\n", piecesBoard[7, 4].check_moves(piecesBoard))
 #print("Wp6----------------------\n", piecesBoard[6, 5].check_moves(piecesBoard))
