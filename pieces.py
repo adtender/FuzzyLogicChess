@@ -1,21 +1,14 @@
 import numpy as np
 import copy
 from collections import deque 
-
+import pandas as pd
 
 class Piece:
 
-    pieceID = ""
-    pieceType = ""
-    team = 0        # -1 for white, 1 for black
-    corps = 0       # 0 left bishop, 1 king, 2 right king
-    active = 0      # 0 dead, 1 alive
-    # availMoves = []
-    # availAttacks = []
-    location = [-1, -1]
-    moveDist = 0
-    # chessboard = parent # piece should have parent chessboard
-    # possibly include update board function
+    chessboard = np.empty((8, 8), dtype=object)
+
+    capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
+    capture_matrix = capture_data.to_numpy()
 
     def __init__(self, id, type, team, corps, loc):
         self.pieceID = id
@@ -23,8 +16,7 @@ class Piece:
         self.team = team
         self.corps = corps
         self.location = loc
-        self.availMoves = []
-        self.availAttacks = []
+        self.active = True
 
         if(type == "h"):
             self.moveDist = 4
@@ -32,7 +24,10 @@ class Piece:
             self.moveDist = 3
         elif(type == "b"):
             self.moveDist = 2
-        # self.chessboard = board
+
+        self.availMoves = []
+        self.availAttacks = []
+        self.check_moves(Piece.chessboard)
 
     def check_moves(self, chessboard):
         # function to check available moves. updates avail_moves array
@@ -166,23 +161,82 @@ class Piece:
     def remove_deuplicates(self, lst):
         return [t for t in (set(tuple(i) for i in lst))]
 
-    def move(self, chessboard):
+    # takes board and moveLoc tuple (row, col)
+    def move(self, newRow, newCol):
         # function that moves the piece
         # returns a new board
+        newBoard = Piece.chessboard
+        print("New Board: ", newBoard)
 
+        if((newRow, newCol) in self.availMoves):
+            # clear current space
+            newBoard[self.location[0]][self.location[1]] = None
 
-        return
+            self.location = [newRow, newCol]
+            
+            newBoard[newRow][newCol] = self
+        elif((newRow, newCol) in self.availAttacks):
+            self.capture(newBoard[newRow][newCol])
+
+        return newBoard
 
     def capture(self, defender):
-        # return true or false or new board?
-        
-        return
+        # return boolean and new board?
+        newBoard = Piece.chessboard
+        result = False
+
+        # use capture matrix with dice roll function to attempt capture,
+        # on capture, set attacked square to null and call move on that square
+        # unsuccessful, just return board
+
+
+        return result, newBoard
 
     def eval_moves(self):
         # evaluates moves based on a heuristic
         # put wesley function here
 
         return 
+
+    def gen_new_board():
+        Piece.chessboard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
+        Piece.chessboard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1]) 
+        Piece.chessboard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
+        Piece.chessboard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns
+        Piece.chessboard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4]) 
+        Piece.chessboard[6, 5] = Piece("wp6", "p", -1, 3, [6, 5])
+        Piece.chessboard[6, 6] = Piece("wp7", "p", -1, 3, [6, 6])
+        Piece.chessboard[6, 7] = Piece("wp8", "p", -1, 3, [6, 7])
+
+        Piece.chessboard[7, 0] = Piece("wr1", "r", -1, 2, [7, 0])
+        Piece.chessboard[7, 7] = Piece("wr2", "r", -1, 2, [7, 7])
+        Piece.chessboard[7, 1] = Piece("wh1", "h", -1, 1, [7, 1])
+        Piece.chessboard[7, 6] = Piece("wh2", "h", -1, 3, [7, 6]) # white back row
+        Piece.chessboard[7, 2] = Piece("wb1", "b", -1, 1, [7, 2]) 
+        Piece.chessboard[7, 5] = Piece("wb2", "b", -1, 3, [7, 5])
+        Piece.chessboard[7, 4] = Piece("wk1", "k", -1, 2, [7, 4])
+        Piece.chessboard[7, 3] = Piece("wq1", "q", -1, 2, [7, 3])
+
+        Piece.chessboard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
+        Piece.chessboard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
+        Piece.chessboard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2])
+        Piece.chessboard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
+        Piece.chessboard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
+        Piece.chessboard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
+        Piece.chessboard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6])
+        Piece.chessboard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7])
+
+        Piece.chessboard[0, 0] = Piece("br1", "r", 1, 2, [0, 0])
+        Piece.chessboard[0, 7] = Piece("br2", "r", 1, 2, [0, 7])
+        Piece.chessboard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1])
+        Piece.chessboard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6]) # black back row
+        Piece.chessboard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2])
+        Piece.chessboard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5])
+        Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
+        Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
+
+    def set_board(newBoard):
+        Piece.chessboard = newBoard
     
     def __str__(self):
         return self.pieceID
@@ -195,7 +249,7 @@ piecesBoard = np.empty((8, 8), dtype=Piece)
 # [Row, Column], [Down, Over]
 
 # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
-
+'''
 piecesBoard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
 piecesBoard[3, 1] = Piece("wp2", "p", -1, 1, [3, 1]) 
 piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
@@ -231,15 +285,25 @@ piecesBoard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2])
 piecesBoard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5])
 piecesBoard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
 piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
+'''
 
 
 # print(piecesBoard)
 
-# print("----------------------\n", piecesBoard[6, 7].check_moves(piecesBoard)) # test check_moves print statement
-
-print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
+#######################################
+# print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
 #print("Wq1---------------------\n", piecesBoard[7, 3].check_moves(piecesBoard))
 #print("Wk1----------------------\n", piecesBoard[7, 4].check_moves(piecesBoard))
 #print("Wp6----------------------\n", piecesBoard[6, 5].check_moves(piecesBoard))
 #print("Wb1----------------------\n", piecesBoard[7, 2].check_moves(piecesBoard))
 #print("White Rook 1----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement
+
+######################################
+
+# print(piecesBoard[6, 2].move(piecesBoard, (5, 2)))
+
+### board inside class testing
+
+Piece.gen_new_board()
+
+print("Moving wp4\n", Piece.chessboard[6][3].move(5, 3))
