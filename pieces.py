@@ -198,7 +198,11 @@ class Piece:
 
         return 
 
+    
     def gen_new_board():
+        # [Row, Column], [Down, Over]
+
+        # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
         Piece.chessboard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
         Piece.chessboard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1]) 
         Piece.chessboard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
@@ -234,6 +238,7 @@ class Piece:
         Piece.chessboard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5])
         Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
         Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
+    
 
     def set_board(newBoard):
         Piece.chessboard = newBoard
@@ -244,66 +249,8 @@ class Piece:
     def __repr__(self):
         return self.pieceID
 
-piecesBoard = np.empty((8, 8), dtype=Piece)
-
-# [Row, Column], [Down, Over]
-
-# id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
-'''
-piecesBoard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
-piecesBoard[3, 1] = Piece("wp2", "p", -1, 1, [3, 1]) 
-piecesBoard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
-piecesBoard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns
-piecesBoard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4]) 
-piecesBoard[6, 5] = Piece("wp6", "p", -1, 3, [6, 5])
-piecesBoard[6, 6] = Piece("wp7", "p", -1, 3, [6, 6])
-piecesBoard[6, 7] = Piece("wp8", "p", -1, 3, [6, 7])
-
-piecesBoard[7, 0] = Piece("wr1", "r", -1, 2, [7, 0])
-piecesBoard[7, 7] = Piece("wr2", "r", -1, 2, [7, 7])
-piecesBoard[7, 1] = Piece("wh1", "h", -1, 1, [7, 1])
-piecesBoard[7, 6] = Piece("wh2", "h", -1, 3, [7, 6]) # white back row
-piecesBoard[7, 2] = Piece("wb1", "b", -1, 1, [7, 2]) 
-piecesBoard[7, 5] = Piece("wb2", "b", -1, 3, [7, 5])
-piecesBoard[7, 4] = Piece("wk1", "k", -1, 2, [7, 4])
-piecesBoard[7, 3] = Piece("wq1", "q", -1, 2, [7, 3])
-
-piecesBoard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
-piecesBoard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
-piecesBoard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2])
-piecesBoard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
-piecesBoard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
-piecesBoard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
-piecesBoard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6])
-piecesBoard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7])
-
-piecesBoard[0, 0] = Piece("br1", "r", 1, 2, [0, 0])
-piecesBoard[0, 7] = Piece("br2", "r", 1, 2, [0, 7])
-piecesBoard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1])
-piecesBoard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6]) # black back row
-piecesBoard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2])
-piecesBoard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5])
-piecesBoard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
-piecesBoard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
-'''
-
-
-# print(piecesBoard)
-
-#######################################
-# print("White horse 1----------------------\n", piecesBoard[7, 1].check_moves(piecesBoard))
-#print("Wq1---------------------\n", piecesBoard[7, 3].check_moves(piecesBoard))
-#print("Wk1----------------------\n", piecesBoard[7, 4].check_moves(piecesBoard))
-#print("Wp6----------------------\n", piecesBoard[6, 5].check_moves(piecesBoard))
-#print("Wb1----------------------\n", piecesBoard[7, 2].check_moves(piecesBoard))
-#print("White Rook 1----------------------\n", piecesBoard[7, 0].check_moves(piecesBoard)) # test check_moves print statement
-
-######################################
-
-# print(piecesBoard[6, 2].move(piecesBoard, (5, 2)))
-
 ### board inside class testing
 
-Piece.gen_new_board()
+#Piece.gen_new_board()
 
-print("Moving wp4\n", Piece.chessboard[6][3].move(5, 3))
+#print("Moving wp4\n", Piece.chessboard[6][3].move(5, 3))
