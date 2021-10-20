@@ -4,6 +4,7 @@ import numpy as np
 import math
 from PIL import ImageTk, Image
 from pieces import Piece
+import random
 
 class CHESSBOARD:
     x1, y1 = -1, -1
@@ -19,6 +20,8 @@ class CHESSBOARD:
     # may make heuristic calculations easier...
     piecesBoard = np.empty((8, 8), dtype=Piece)
 
+    diceVal = 0
+
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -28,6 +31,7 @@ class CHESSBOARD:
         self.add_piece_objects()
         self.draw_board()
         self.pieces()
+        
         self.init_dice()
 
     def draw_board(self):
@@ -102,8 +106,8 @@ class CHESSBOARD:
         self.add_piece(self.wp, Piece.chessboard[6][4].location, "wp5")
         self.add_piece(self.wp, Piece.chessboard[6][5].location, "wp6")
         self.add_piece(self.wp, Piece.chessboard[6][6].location, "wp7")
-        self.add_piece(self.wp, Piece.chessboard[6][7].location, "wp8")
-        
+        self.add_piece(self.wp, Piece.chessboard[6][7].location, "wp8")  
+
     def init_dice(self):
         # beginning image
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
@@ -125,6 +129,7 @@ class CHESSBOARD:
         offset_y = 132
         self.canvas.create_image(offset_x * (((posx+1)*2)-1), offset_y + (self.dim_square * ((posy+1)-1)), 
             image=img, anchor="center", tag=piece)     
+
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
