@@ -37,6 +37,8 @@ class Piece:
         # self.location is array of 2 numbers [y, x] that gives piece location
         pieceLocY = self.location[0]
         pieceLocX = self.location[1]
+        self.availMoves = []
+        self.availAttacks = []
         team = self.team
 
         
@@ -135,28 +137,10 @@ class Piece:
         self.availMoves = self.remove_deuplicates(self.availMoves)
         self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
-        print("AvailMoves: ", self.availMoves)
-        print("AvailAttacks: ", self.availAttacks)
+        #print("AvailMoves: ", self.availMoves)
+        #print("AvailAttacks: ", self.availAttacks)
 
         return moves
-
-        '''
-        Good logic for other pieces
-         for col in range(pieceLocX-1, pieceLocX+2):
-            if(col < 0 or col > 8):
-                continue
-            for row in range(pieceLocY-1, pieceLocY+2):
-                if(row < 0 or row > 8):
-                    continue
-                # if space not occupied, then legal move
-                if chessboard[row][col] == None:
-                    # a legal move is represented by the number -10 for black, and 10 for white. Can change this later if confusing
-                    # will likely need two for loop sets, one for black pieces, one for white. 
-                    # Can solve this by using piece ID instead of number, and checking for team based on that
-                    moves[row][col] = "legal"
-        self.availMoves = moves
-        return moves
-        '''
 
     def remove_deuplicates(self, lst):
         return [t for t in (set(tuple(i) for i in lst))]

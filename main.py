@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 from pieces import Piece
 
 class CHESSBOARD:
-    x1, y1 = -1, -1
+    x1, y1 = None, None
     br, bkn, bb, bq, bk, bp, wr, wkn, wb, wq, wk, wp = "", "", "", "", "", "", "", "", "", "", "", ""
     color1, color2, color3, color4, color5, color6 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c", "#9c1e37", "#b9c288"
     rows, columns = 8, 8
@@ -14,6 +14,8 @@ class CHESSBOARD:
     top_offset, side_offset = 200, 100
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
+    locationLock = []
+    locationLockedIn = False
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
@@ -75,7 +77,7 @@ class CHESSBOARD:
         self.add_piece(self.bb, Piece.chessboard[0][2].location, "bb1")
         self.add_piece(self.bb, Piece.chessboard[0][5].location, "bb2")
         self.add_piece(self.bq, Piece.chessboard[0][3].location, "bq1")
-        self.add_piece(self.bk, Piece.chessboard[0][4].location, "bk2")
+        self.add_piece(self.bk, Piece.chessboard[0][4].location, "bk1")
 
         self.add_piece(self.bp, Piece.chessboard[1][0].location, "bp1")
         self.add_piece(self.bp, Piece.chessboard[1][1].location, "bp2")
@@ -93,7 +95,7 @@ class CHESSBOARD:
         self.add_piece(self.wb, Piece.chessboard[7][2].location, "wb1")
         self.add_piece(self.wb, Piece.chessboard[7][5].location, "wb2")
         self.add_piece(self.wq, Piece.chessboard[7][3].location, "wq1")
-        self.add_piece(self.wk, Piece.chessboard[7][4].location, "wk2")
+        self.add_piece(self.wk, Piece.chessboard[7][4].location, "wk1")
 
         self.add_piece(self.wp, Piece.chessboard[6][0].location, "wp1")
         self.add_piece(self.wp, Piece.chessboard[6][1].location, "wp2")
@@ -109,13 +111,6 @@ class CHESSBOARD:
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
         self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
 
-    def highlight_green(self, x, y, color):
-        self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
-            ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
-            fill = color, tag = "move_locations")
-        self.canvas.tag_lower("move_locations")
-        self.canvas.tag_lower("board")
-
     def add_piece(self, img, location, piece):
         self.canvas.delete("piece_selected")
         self.canvas.delete("move_locations")
@@ -126,13 +121,58 @@ class CHESSBOARD:
         self.canvas.create_image(offset_x * (((posx+1)*2)-1), offset_y + (self.dim_square * ((posy+1)-1)), 
             image=img, anchor="center", tag=piece)     
 
+    def piece_select(self, locationLock, chessboard):
+        yLoc = locationLock[0]
+        xLoc = locationLock[1]
+        Piece.check_moves(Piece.chessboard[yLoc][xLoc], Piece.chessboard)
+        availMoves = Piece.chessboard[yLoc][xLoc].availMoves
+        availAttacks = Piece.chessboard[yLoc][xLoc].availAttacks
+        self.moves_and_attacks_highlight(availMoves, chessboard)
+        self.moves_and_attacks_highlight(availAttacks, chessboard)
+
+    def piece_move(self, moveToCoords):
+        moveCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves, moveToCoords)
+        attackCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks, moveToCoords)
+        if moveCheck and attackCheck == False:
+            img = eval("self." # TODO: send to new method
+                + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
+            self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
+            self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
+            Piece.chessboard[self.locationLock[0]][self.locationLock[1]].move(moveToCoords[0], moveToCoords[1])
+        if moveCheck and attackCheck:
+            # TODO: Implement attack function
+            return
+        if moveCheck == False and attackCheck: #rook attack from afar
+            # TODO: Implement special case attack
+            return
+        print(Piece.chessboard)
+
+    def check_valid_piece_move(self, availMovesOrAttacks, moveToCoords):
+        for i in range(len(availMovesOrAttacks)):
+            if availMovesOrAttacks[i] == tuple(moveToCoords):
+                return True
+        return False
+        
+    def moves_and_attacks_highlight(self, array, chessboard):
+        arrayToParse = len(array)
+        for i in range(arrayToParse):
+            x = array[i][0]
+            y = array[i][1]
+            highlight("move_locations", chessboard, x, y, chessboard.color4)
+
+
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
         ((xBoard) * 64) + chessboard.dim_square, ((yBoard + 1) * 64) + chessboard.dim_square + 35, 
         fill = color, tag = htag)
 
+    chessboard.canvas.tag_raise(htag)
+    chessboard.canvas.lower("piece_selected")
+    chessboard.canvas.lower("move_locations")
+    chessboard.canvas.lower("board")
+
 def highlight_corps(chessboard, yBoard, xBoard):
-    print(yBoard, xBoard)
+    #print(yBoard, xBoard)
     for i in range(8):
         for j in range(8):
             if Piece.chessboard[i][j]:
@@ -141,11 +181,25 @@ def highlight_corps(chessboard, yBoard, xBoard):
                     highlight("corpsHlight", chessboard, i, j, chessboard.color6)
                     chessboard.canvas.lower("corpsHlight")
     
-
-def on_click(event):
-    print("Moving wp4\n", Piece.chessboard[6][3].move(5, 3))
-    print("loc: ", Piece.chessboard[5][3].location)
-    print(Piece.chessboard)
+def on_click(event, chessboard):
+    chessboard.canvas.delete("move_locations")
+    chessboard.canvas.delete("piece_selected")
+    try:
+        yLoc = chessboard.y1 -1
+        xLoc = chessboard.x1 -1
+    except:
+        return
+    if Piece.chessboard[yLoc][xLoc]:
+        highlight("piece_selected", chessboard, yLoc, xLoc, chessboard.color3)
+        chessboard.locationLockedIn = True
+        chessboard.locationLock = [yLoc, xLoc]
+        chessboard.piece_select(Piece.chessboard[yLoc][xLoc].location, chessboard)
+        chessboard.canvas.delete("copsHlight")
+        return
+    if chessboard.locationLockedIn == True:
+        chessboard.piece_move([yLoc, xLoc])
+        chessboard.locationLock = [None]
+        chessboard.locationLockedIn = False
 
 def motion(event, chessboard):
     x, y = event.x - 2, event.y - 100
@@ -183,11 +237,7 @@ def main():
     root.iconphoto(False, icon)
     root.resizable(False, False)
     root.bind("<Motion>", lambda event: motion(event, chessboard))
-    root.bind("<Button-1>", lambda event: on_click(event))
-
-    # [Row, Column], [Down, Over]
-
-    # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
+    root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
     root.mainloop()
 
