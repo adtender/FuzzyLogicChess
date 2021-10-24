@@ -220,6 +220,7 @@ class Piece:
         Piece.graveyard.append(self)
         Piece.activePieces.remove(self)
         Piece.chessboard[self.location[0]][self.location[1]] = attacker
+        Piece.chessboard[attacker.location[0]][attacker.location[1]] = None
         attacker.location = [self.location[0], self.location[1]]
         self.active = False
         return self
@@ -261,7 +262,7 @@ class Piece:
 
         Piece.chessboard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
         Piece.chessboard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
-        Piece.chessboard[5, 2] = Piece("bp3", "p", 1, 1, [5, 2]) # testing capture with replace piece, original location: [1, 2]
+        Piece.chessboard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2]) 
         Piece.chessboard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
         Piece.chessboard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
         Piece.chessboard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
