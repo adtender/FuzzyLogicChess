@@ -12,6 +12,7 @@ class Piece:
     captureMatrix = captureData.to_numpy()
 
     pieceData = ['k', 'q', 'h', 'b', 'r', 'p']
+    activePieces = []
     graveyard = []
 
     def __init__(self, id, type, team, corps, loc):
@@ -21,6 +22,7 @@ class Piece:
         self.corps = corps
         self.location = loc
         self.active = True
+        Piece.activePieces.append(self)
 
         if(type == "h"):
             self.moveDist = 4
@@ -151,7 +153,9 @@ class Piece:
         # function that moves the piece
         # returns a new board
         newBoard = Piece.chessboard
-        print("New Board: ", newBoard)
+        # print("New Board: ", newBoard)
+
+
 
         if((newRow, newCol) in self.availMoves):
             # clear current space
@@ -166,6 +170,7 @@ class Piece:
         return newBoard
 
     def capture(self, defender):
+        print("In capture")
         # return boolean and new board?
         newBoard = Piece.chessboard
         result = False
@@ -179,22 +184,51 @@ class Piece:
         # on capture, set attacked square to null and call move on that square
         # unsuccessful, just return board
 
-        if(str(testDiceRoll) in str(Piece.captureMatrix[attackIndex][defenderIndex]) and self.pieceType != 'r'):
+        if(str(testDiceRoll) in str(Piece.captureMatrix[attackIndex][defenderIndex])): # and self.pieceType != 'r'):
             result = True
-            # copy piece to graveyard, then replace piece with attacker.
-
+            # then replace piece with attacker.
+            
+            defender.replace_piece(self)
+            
+            ''' OLD REPLACE CODE
             Piece.graveyard.append(defender)
             Piece.chessboard[defender.location[0]][defender.location[1]] = self
+            '''
 
+        '''# Rook exception done in main ?
         elif self.pieceType == 'r':
-            # Rook exception
+            
             Piece.graveyard.append(defender)
             Piece.chessboard[defender.location[0]][defender.location[1]] = None
+            '''
 
         print("Graveyard: ", Piece.graveyard)
         print("Chessboard: \n", Piece.chessboard)
 
         return result, newBoard
+
+    # use this for rook special case?
+    def kill_piece(self):
+        Piece.graveyard.append(self)
+        Piece.activePieces.remove(self)
+        Piece.chessboard[self.location[0]][self.location[1]] = None
+        self.active = False
+        return self
+
+    # TAKES IN ATTACKER, NOT DEFENDER (defender is self)
+    def replace_piece(self, attacker):
+        Piece.graveyard.append(self)
+        Piece.activePieces.remove(self)
+        Piece.chessboard[self.location[0]][self.location[1]] = attacker
+        attacker.location = [self.location[0], self.location[1]]
+        self.active = False
+        return self
+
+    ### update moves... all pieces that are active, check their moves.
+    ## def update moves?
+
+
+    ### Piece scraper, scrapes chessboard for piece matching pieceID and returns Piece.chessboard[loc][loc]
 
     def eval_moves(self):
         # evaluates moves based on a heuristic
@@ -227,7 +261,7 @@ class Piece:
 
         Piece.chessboard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
         Piece.chessboard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
-        Piece.chessboard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2])
+        Piece.chessboard[5, 2] = Piece("bp3", "p", 1, 1, [5, 2]) # testing capture with replace piece, original location: [1, 2]
         Piece.chessboard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
         Piece.chessboard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
         Piece.chessboard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
@@ -255,6 +289,10 @@ class Piece:
 
 ### board inside class testing
 
-#Piece.gen_new_board()
+######## Piece.gen_new_board()
 
 #print("Moving wp4\n", Piece.chessboard[6][3].move(5, 3))
+
+# testing capture with replace_piece
+
+# print(Piece.chessboard, "\nGraveyard:", Piece.graveyard, "\nActive Pieces", Piece.activePieces)
