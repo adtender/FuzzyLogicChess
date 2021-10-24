@@ -124,7 +124,7 @@ class CHESSBOARD:
     def piece_select(self, locationLock, chessboard):
         yLoc = locationLock[0]
         xLoc = locationLock[1]
-        Piece.check_moves(Piece.chessboard[yLoc][xLoc], Piece.chessboard)
+        Piece.check_moves(Piece.chessboard[yLoc][xLoc])
         availMoves = Piece.chessboard[yLoc][xLoc].availMoves
         availAttacks = Piece.chessboard[yLoc][xLoc].availAttacks
         self.moves_and_attacks_highlight(availMoves, chessboard)
@@ -133,7 +133,9 @@ class CHESSBOARD:
     def piece_move(self, moveToCoords):
         moveCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves, moveToCoords)
         attackCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks, moveToCoords)
-        if moveCheck and attackCheck == False:
+        print("moveCheck = ", moveCheck)
+        print("attackCheck = ", attackCheck)
+        if attackCheck == False and moveCheck:
             img = eval("self." # TODO: send to new method
                 + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
             self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
@@ -208,6 +210,7 @@ def motion(event, chessboard):
     overChar = chr(over)
 
     chessboard.canvas.delete("hlight")
+    chessboard.canvas.delete("corpsHlight")
     #print(chessboard.x1, chessboard.y1)
     if x > 0 and x < 512 and y > 0 and y < 512:
         chessboard.loc = str(overChar) + str(down)

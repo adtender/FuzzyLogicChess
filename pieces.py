@@ -1,14 +1,18 @@
 import numpy as np
+import pandas as pd
 import copy
 from collections import deque 
-import pandas as pd
+import random
 
 class Piece:
 
     chessboard = np.empty((8, 8), dtype=object)
 
-    capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
-    capture_matrix = capture_data.to_numpy()
+    captureData = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight (h)", "Bishop", "Rook", "Pawn"])
+    captureMatrix = captureData.to_numpy()
+
+    pieceData = ['k', 'q', 'h', 'b', 'r', 'p']
+    graveyard = []
 
     def __init__(self, id, type, team, corps, loc):
         self.pieceID = id
@@ -27,12 +31,12 @@ class Piece:
 
         self.availMoves = []
         self.availAttacks = []
-        self.check_moves(Piece.chessboard)
+        self.check_moves()
 
-    def check_moves(self, chessboard):
+    def check_moves(self):
         # function to check available moves. updates avail_moves array
         # moves array is a chessboard that shows available moves right now. Will show captures as piece values in future
-        moves = copy.copy(chessboard)
+        moves = copy.copy(Piece.chessboard)
         
         # self.location is array of 2 numbers [y, x] that gives piece location
         pieceLocY = self.location[0]
@@ -137,9 +141,6 @@ class Piece:
         self.availMoves = self.remove_deuplicates(self.availMoves)
         self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
-        #print("AvailMoves: ", self.availMoves)
-        #print("AvailAttacks: ", self.availAttacks)
-
         return moves
 
     def remove_deuplicates(self, lst):
@@ -168,11 +169,30 @@ class Piece:
         # return boolean and new board?
         newBoard = Piece.chessboard
         result = False
+        testDiceRoll = 6
+        # realDiceRoll = CHESSBOARD.roll_value()
+        # find index to use
+        attackIndex = Piece.pieceData.index(self.pieceType)
+        defenderIndex = Piece.pieceData.index(defender.pieceType)
 
         # use capture matrix with dice roll function to attempt capture,
         # on capture, set attacked square to null and call move on that square
         # unsuccessful, just return board
 
+        if(str(testDiceRoll) in str(Piece.captureMatrix[attackIndex][defenderIndex]) and self.pieceType != 'r'):
+            result = True
+            # copy piece to graveyard, then replace piece with attacker.
+
+            Piece.graveyard.append(defender)
+            Piece.chessboard[defender.location[0]][defender.location[1]] = self
+
+        elif self.pieceType == 'r':
+            # Rook exception
+            Piece.graveyard.append(defender)
+            Piece.chessboard[defender.location[0]][defender.location[1]] = None
+
+        print("Graveyard: ", Piece.graveyard)
+        print("Chessboard: \n", Piece.chessboard)
 
         return result, newBoard
 
