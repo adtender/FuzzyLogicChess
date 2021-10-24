@@ -139,7 +139,11 @@ class Piece:
                             self.availAttacks.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
                         self.availMoves.append([xSearch, ySearch])
-
+                    if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 1 and moves[xSearch][ySearch].team != team):
+                        self.availMoves.append([xSearch, ySearch])
+                        self.availAttacks.append([xSearch, ySearch])
+            print("Avail Moves Rook: ", self.availMoves)
+            print("Avail Attacks Rook: ", self.availAttacks)
         self.availMoves = self.remove_deuplicates(self.availMoves)
         self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
