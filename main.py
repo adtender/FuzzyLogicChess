@@ -127,27 +127,33 @@ class CHESSBOARD:
         Piece.check_moves(Piece.chessboard[yLoc][xLoc])
         availMoves = Piece.chessboard[yLoc][xLoc].availMoves
         availAttacks = Piece.chessboard[yLoc][xLoc].availAttacks
-        self.moves_and_attacks_highlight(availMoves, chessboard)
-        self.moves_and_attacks_highlight(availAttacks, chessboard)
+        self.moves_and_attacks_highlight(availMoves, chessboard, self.color4)
+        self.moves_and_attacks_highlight(availAttacks, chessboard, self.color5)
 
     def piece_move(self, moveToCoords):
         moveCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves, moveToCoords)
         attackCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks, moveToCoords)
         print("moveCheck = ", moveCheck)
         print("attackCheck = ", attackCheck)
-        if attackCheck == False and moveCheck:
+        if attackCheck == False and moveCheck: # moves with no attacks
             img = eval("self." # TODO: send to new method
                 + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
             self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
             self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
             Piece.chessboard[self.locationLock[0]][self.locationLock[1]].move(moveToCoords[0], moveToCoords[1])
-        if moveCheck and attackCheck:
-            # TODO: Implement attack function
-            return
+        if moveCheck and attackCheck: # moves with attacks
+            img = eval("self." # TODO: send to new method
+                + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
+            self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
+            self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+            self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
+            Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
         if moveCheck == False and attackCheck: #rook attack from afar
             # TODO: Implement special case attack
             return
-        print(Piece.chessboard)
+        #print(Piece.chessboard)
+        self.locationLockedIn = False
+
 
     def check_valid_piece_move(self, availMovesOrAttacks, moveToCoords):
         for i in range(len(availMovesOrAttacks)):
@@ -155,12 +161,12 @@ class CHESSBOARD:
                 return True
         return False
         
-    def moves_and_attacks_highlight(self, array, chessboard):
+    def moves_and_attacks_highlight(self, array, chessboard, color):
         arrayToParse = len(array)
         for i in range(arrayToParse):
             x = array[i][0]
             y = array[i][1]
-            highlight("move_locations", chessboard, x, y, chessboard.color4)
+            highlight("move_locations", chessboard, x, y, color)
 
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
@@ -191,14 +197,14 @@ def on_click(event, chessboard):
         xLoc = chessboard.x1 -1
     except:
         return
-    if Piece.chessboard[yLoc][xLoc]:
+    if Piece.chessboard[yLoc][xLoc] and chessboard.locationLockedIn == False:
         highlight("piece_selected", chessboard, yLoc, xLoc, chessboard.color3)
         chessboard.locationLockedIn = True
         chessboard.locationLock = [yLoc, xLoc]
         chessboard.piece_select(Piece.chessboard[yLoc][xLoc].location, chessboard)
         chessboard.canvas.delete("copsHlight")
         return
-    if chessboard.locationLockedIn == True:
+    if chessboard.locationLockedIn:
         chessboard.piece_move([yLoc, xLoc])
         chessboard.locationLock = [None]
         chessboard.locationLockedIn = False
