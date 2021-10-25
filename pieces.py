@@ -113,6 +113,7 @@ class Piece:
                             self.availAttacks.append([nr, nc])
                     elif(queue[0][2] == self.moveDist + 1 and self.pieceType == 'h' and isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
                             self.availAttacks.append([nr, nc])
+                            self.availMoves.append([nr, nc])
                             self.surprise = True
                     
 
@@ -182,12 +183,11 @@ class Piece:
             self.location = [newRow, newCol]
             
             newBoard[newRow][newCol] = self
-        elif((newRow, newCol) in self.availAttacks):
-            self.capture(newBoard[newRow][newCol])
+        
 
         return newBoard
 
-    def capture(self, defender):
+    def capture(self, defender, dice, rookRanged):
         print("In capture")
         # return boolean and new board?
         newBoard = Piece.chessboard
@@ -205,8 +205,13 @@ class Piece:
         if(str(testDiceRoll) in str(Piece.captureMatrix[attackIndex][defenderIndex])): # and self.pieceType != 'r'):
             result = True
             # then replace piece with attacker.
+
+            if (dice == False and rookRanged): 
+                defender.kill_piece()
+                return result
             
-            defender.replace_piece(self)
+            if dice == False:
+                defender.replace_piece(self)
             
             ''' OLD REPLACE CODE
             Piece.graveyard.append(defender)
@@ -223,7 +228,7 @@ class Piece:
         print("Graveyard: ", Piece.graveyard)
         print("Chessboard: \n", Piece.chessboard)
 
-        return result, newBoard
+        return result
 
     # use this for rook special case?
     def kill_piece(self):

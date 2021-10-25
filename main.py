@@ -2,6 +2,7 @@ from tkinter import *
 import tkinter as tk
 import numpy as np
 import math
+import random
 from PIL import ImageTk, Image
 from pieces import Piece
 
@@ -136,6 +137,9 @@ class CHESSBOARD:
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
         self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
 
+    def rand_dice(self):
+        return random.randrange(1,6)
+
     def add_piece(self, img, location, piece):
         self.canvas.delete("piece_selected")
         self.canvas.delete("move_locations")
@@ -162,6 +166,8 @@ class CHESSBOARD:
         print("moveCheck = ", moveCheck)
         print("attackCheck = ", attackCheck)
 
+        Piece.diceVal = self.rand_dice()
+
         self.turn_forward(Piece.chessboard[self.locationLock[0]][self.locationLock[1]])
 
         if attackCheck == False and moveCheck: # moves with no attacks
@@ -171,15 +177,21 @@ class CHESSBOARD:
             self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
             Piece.chessboard[self.locationLock[0]][self.locationLock[1]].move(moveToCoords[0], moveToCoords[1])
         if moveCheck and attackCheck: # moves with attacks
-            img = eval("self." # TODO: send to new method
-                + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
-            self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
-            self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
-            self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
-            Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
+
+            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
+            if b:
+                img = eval("self." # TODO: send to new method
+                    + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
+                self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
+                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+                self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
+                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
         if moveCheck == False and attackCheck: #rook attack from afar
-            self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
-            Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
+            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
+            if b:
+                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+                #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
+                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
         print(Piece.chessboard)
         
         self.locationLockedIn = False
