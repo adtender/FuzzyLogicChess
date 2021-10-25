@@ -87,14 +87,24 @@ class Piece:
 
                 for dir in directions:
                     nr, nc = coord[0]+dir[0], coord[1]+dir[1]
+                    # Checks for:
+                    # is square to check out of bounds
+                    # is square to check
                     if (nr < 0 or nr >= R or nc < 0 or nc >= C or 
                     (isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is self.team) 
-                    or visited[nr][nc]): continue 
+                    or visited[nr][nc]
+                    or ((isinstance(moves[coord[0]][coord[1]], Piece) and moves[coord[0]][coord[1]].team is not self.team) 
+                        and (isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team))): continue 
                     queue.appendleft((nr, nc, coord[2]+1))
                     if(queue[0][2] <= self.moveDist):
                         
                         self.availMoves.append([nr,nc])
                         # print(moves[nr][nc].team)
+                        # TODO Stop pieces from being able to jump in attacks
+                        # stop pieces from adding to attacks if blocked? adapt bfs to search 
+                        #       have array that tracks enemy active pieces... if currently in square with enemy piece,
+                        #       then dont check the next square (cut off node)
+                        #          OR change logic of check moves so that avail moves does not overlap with avail attacks at all? 
                         if(isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
                             self.availAttacks.append([nr, nc])
                         else:
