@@ -178,20 +178,22 @@ class CHESSBOARD:
             Piece.chessboard[self.locationLock[0]][self.locationLock[1]].move(moveToCoords[0], moveToCoords[1])
         if moveCheck and attackCheck: # moves with attacks
 
-            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
+            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
+            print(b)
             if b:
                 img = eval("self." # TODO: send to new method
                     + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
                 self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
-                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
+                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
         if moveCheck == False and attackCheck: #rook attack from afar
-            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
+            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
+            print(b)
             if b:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
-                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
+                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
         print(Piece.chessboard)
         
         self.locationLockedIn = False
