@@ -137,7 +137,17 @@ class CHESSBOARD:
     def init_dice(self):
         # beginning image
         self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
+        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
+        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice2 , tag="dice2")
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice3 , tag="dice3")
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice4")
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice5")
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice6")
+        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice1")
 
     def rand_dice(self):
         return random.randrange(1,6)
@@ -170,6 +180,10 @@ class CHESSBOARD:
 
         Piece.diceVal = self.rand_dice()
 
+        if (tuple(moveToCoords) not in Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves and 
+        tuple(moveToCoords) not in Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks):
+            return
+
         self.turn_forward(Piece.chessboard[self.locationLock[0]][self.locationLock[1]])
 
         if attackCheck == False and moveCheck: # moves with no attacks
@@ -183,6 +197,7 @@ class CHESSBOARD:
             b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
             print(b)
             if b:
+                self.canvas.tag_raise("dice" + str(Piece.diceVal))
                 img = eval("self." # TODO: send to new method
                     + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
                 self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
@@ -306,6 +321,9 @@ def on_click(event, chessboard):
     try:
         yLoc = chessboard.y1 -1
         xLoc = chessboard.x1 -1
+        if xLoc == -101:
+            chessboard.locationLockedIn = False
+            return
     except:
         return
     if Piece.chessboard[yLoc][xLoc] and chessboard.locationLockedIn == False and Piece.chessboard[yLoc][xLoc].active == True:
@@ -329,7 +347,7 @@ def motion(event, chessboard):
     chessboard.canvas.delete("hlight")
     chessboard.canvas.delete("corpsHlight")
     chessboard.clear_corps_indicator_highlight()
-    if x > 0 and x < 512 and y > 0 and y < 512:
+    if x > 0 and x < 512 and y > 0 and y < 512 and not btnState:
         chessboard.loc = str(overChar) + str(down)
         chessboard.x1 = over-64
         chessboard.y1 = abs(down-9)
@@ -350,6 +368,9 @@ def motion(event, chessboard):
         #chessboard.canvas.lower("move_locations")
         
         chessboard.canvas.lower("board")
+    else:
+        x, y = -1, -1
+        chessboard.x1, chessboard.y1 = -100, -100
 
 def main():
     window = Tk()
