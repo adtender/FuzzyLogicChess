@@ -23,6 +23,7 @@ class Piece:
         self.location = loc
         self.active = True
         Piece.activePieces.append(self)
+        self.surprise = False
 
         if(type == "h"):
             self.moveDist = 4
@@ -104,12 +105,16 @@ class Piece:
                         #       have array that tracks enemy active pieces... if currently in square with enemy piece,
                         #       then dont check the next square (cut off node)
                         #          OR change logic of check moves so that avail moves does not overlap with avail attacks at all? 
+
+                        # if queue[0][2] == self.movedist then run another BFS for distance 1 around the current square
+                        # remove "and isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team"
+                        
                         if(isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
                             self.availAttacks.append([nr, nc])
-                        else:
-                            moves[nr][nc] = "lg"
-                    # if(self.pieceType == 'h' and queue[0][2] == self.moveDist and moves[nr][nc].team is not self.team):
-                     #   self.availAttacks.append([nr, nc])
+                    elif(queue[0][2] == self.moveDist + 1 and self.pieceType == 'h' and isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
+                            self.availAttacks.append([nr, nc])
+                            self.surprise = True
+                    
 
         
         if(self.pieceType == 'r'):
