@@ -1,6 +1,8 @@
 from tkinter import *
 import tkinter as tk
 import numpy as np
+import os
+import json
 import math
 import random
 from PIL import ImageTk, Image
@@ -350,16 +352,122 @@ def motion(event, chessboard):
         chessboard.canvas.lower("board")
 
 def main():
-    root = tk.Tk()
-    root.title('Fuzzy-Logic Medieval Chess')
-    chessboard = CHESSBOARD(root)
-    icon = PhotoImage(file="./data/misc/mainIcon.png")
-    root.iconphoto(False, icon)
-    root.resizable(False, False)
-    root.bind("<Motion>", lambda event: motion(event, chessboard))
-    root.bind("<Button-1>", lambda event: on_click(event, chessboard))
+    window = Tk()
+    window.geometry("1200x634+400+0")
+    window.title("Fuzzy-Logic Medieval Chess")
 
-    root.mainloop()
+    img = PhotoImage(file="./data/Image/checkmate.gif")
+    label = Label(window, image=img)
+    window.resizable(False, False)
+    label.place(x=0, y=0, relwidth=1, relheight=1)
+
+    def restart():
+        os.execl(sys.executable, sys.executable, *sys.argv)
+    def load():
+        pass
+
+    def save():
+        pass
+
+    def credit():
+        pass
+
+   
+    def start():
+        window.destroy()
+        root = Tk()
+        root.title('Fuzzy-Logic Medieval Chess')
+        chessboard = CHESSBOARD(root)
+        icon = PhotoImage(file="./data/misc/mainIcon.png")
+        root.iconphoto(False, icon)
+        root.resizable(False, False)
+        root.bind("<Motion>", lambda event: motion(event, chessboard))
+        root.bind("<Button-1>", lambda event: on_click(event, chessboard))
+    
+        #root.mainloop()
+        navIcon = PhotoImage(file="./data/Image/menu.png")
+        closeIcon = PhotoImage(file="./data/Image/close.png")
+        global btnState
+        btnState = False
+            # setting switch function:
+        def switch():
+                global btnState
+                if btnState:
+                    # create animated Navbar closing:
+                    #for x in range(301):
+                    navRoot.place(x=-301, y=0)
+                    # topFrame.update()
+
+                    # resetting widget colors:
+                    homeLabel.config(bg="#58636F")
+                    topFrame.config(bg="#58636F")
+                    root.config(bg="gray17")
+
+                    # turning button OFF:
+                    btnState = False
+                else:
+                    # make root dim:
+                    homeLabel.config(bg="#58636F")
+                    topFrame.config(bg="#58636F")
+                    root.config(bg="#58636F")
+
+                    # created animated Navbar opening:
+                  #  for x in range(-300, 0):
+                    navRoot.place(x=0, y=0)
+                      #  topFrame.update()
+
+                    # turing button ON:
+                    btnState = True
+
+            # top Navigation bar:
+        topFrame = tk.Frame(root, bg="#58636F")
+        topFrame.pack(side="top", fill=tk.X)
+
+            # Header label text:
+        homeLabel = tk.Label(topFrame, text="Fuzzy-Logic Medieval Chess", font="Bahnschrift 15", bg="#58636F", fg="white", height=2, padx=20)
+        homeLabel.pack(side="right")
+       
+            # Navbar button:
+        navbarBtn = tk.Button(topFrame, image=navIcon, bg="#58636F", activebackground="#58636F", bd=0, padx=20, command=switch)
+        navbarBtn.place(x=10, y=10)
+
+            # setting Navbar frame
+        navRoot = tk.Frame(root, bg="gray17", height=1000, width=300)
+        navRoot.place(x=-300, y=0)
+        tk.Label(navRoot, font="Bahnschrift 15", bg="#58636F", fg="black", height=2, width=300, padx=20).place(x=0, y=0)
+
+            # set y-coordinate of Navbar widgets:
+        y = 80
+  
+        tk.Button(navRoot, text="Restart", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0, command=restart).place(x=25, y=y)
+        tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command =save).place(x=25, y=115) 
+        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=load).place(x=25, y=150)
+        tk.Button(navRoot, text="About", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=credit).place(x=25, y=185)
+        tk.Button(navRoot, text="Exit", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=root.quit).place(x=25, y=220)
+       
+        y += 40 
+
+            # Navbar Close Button:
+        closeBtn = tk.Button(navRoot, image=closeIcon, bg="#58636F", activebackground="#58636F", bd=0, command=switch)
+        closeBtn.place(x=250, y=10)   
+                             
+        root.mainloop()
+
+
+
+    endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
+    endSplash.place(x=500, y=295)
+
+    endSplash1 = Button(window, text="LOAD GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15,command=load, borderwidth=2)
+    endSplash1.place(x=500, y=375)
+
+    endSplash2 = Button(window, text="EXIT", background ="#58636F", fg ="#33B5E5", height = 3,width=15,borderwidth=2, command=window.quit)
+    endSplash2.place(x=500, y=455)
+
+    window.mainloop()
+
+
+
 
 if __name__ == "__main__":
     main()
