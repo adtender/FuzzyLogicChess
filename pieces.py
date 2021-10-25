@@ -93,8 +93,7 @@ class Piece:
                     if (nr < 0 or nr >= R or nc < 0 or nc >= C or 
                     (isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is self.team) 
                     or visited[nr][nc]
-                    or ((isinstance(moves[coord[0]][coord[1]], Piece) and moves[coord[0]][coord[1]].team is not self.team) 
-                        and (isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team))): continue 
+                    or ((isinstance(moves[coord[0]][coord[1]], Piece) and moves[coord[0]][coord[1]].team is not self.team))): continue 
                     queue.appendleft((nr, nc, coord[2]+1))
                     if(queue[0][2] <= self.moveDist):
                         
