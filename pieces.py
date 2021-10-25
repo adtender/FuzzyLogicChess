@@ -8,8 +8,16 @@ class Piece:
 
     chessboard = np.empty((8, 8), dtype=object)
 
-    captureData = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight (h)", "Bishop", "Rook", "Pawn"])
-    captureMatrix = captureData.to_numpy()
+    # captureData = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight (h)", "Bishop", "Rook", "Pawn"])
+    # captureMatrix = captureData.to_numpy()
+
+    captureMatrix = [   [654, 654, 654, 654, 65, 654321],
+                        [654, 654, 654, 654, 65, 65432],
+                        [65, 65, 65, 65, 65, 65432],
+                        [65, 65, 65, 654, 65, 6543],
+                        [654, 654, 654, 65, 65, 65],
+                        [6, 6, 6, 65, 6, 654]
+                    ]
 
     pieceData = ['k', 'q', 'h', 'b', 'r', 'p']
     activePieces = []
@@ -22,7 +30,7 @@ class Piece:
         self.team = team
         self.corps = corps
         self.location = loc
-        self.active = active
+        self.active = active        # corps active or not
         Piece.activePieces.append(self)
         self.surprise = False
 
@@ -35,7 +43,6 @@ class Piece:
 
         self.availMoves = []
         self.availAttacks = []
-        self.check_moves()
 
     def check_moves(self):
         # function to check available moves. updates avail_moves array
@@ -248,6 +255,14 @@ class Piece:
 
 
     ### Piece scraper, scrapes chessboard for piece matching pieceID and returns Piece.chessboard[loc][loc]
+    def find_piece(ID):
+        for row in Piece.chessboard:
+            for piece in row:
+                if(isinstance(piece, Piece) and piece.pieceID == ID):
+                    return piece
+
+        return None
+
 
     def eval_moves(self):
         # evaluates moves based on a heuristic
@@ -295,6 +310,20 @@ class Piece:
         Piece.chessboard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5], False)
         Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4], False)
         Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3], False)
+
+        # this should also call check moves after ALL pieces have been created.
+
+        Piece.check_all_moves()
+
+    # calls check moves on all alive pieces 
+    def check_all_moves():
+        for row in Piece.chessboard:
+            for piece in row:
+                if(isinstance(piece, Piece)):
+                    piece.check_moves()
+                
+        return
+
     
 
     def set_board(newBoard):
