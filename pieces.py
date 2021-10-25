@@ -14,6 +14,7 @@ class Piece:
     pieceData = ['k', 'q', 'h', 'b', 'r', 'p']
     activePieces = []
     graveyard = []
+    diceVal = 0
 
     def __init__(self, id, type, team, corps, loc, active):
         self.pieceID = id
@@ -46,6 +47,7 @@ class Piece:
         pieceLocX = self.location[1]
         self.availMoves = []
         self.availAttacks = []
+        self.specialAttacks = []
         team = self.team
 
         
@@ -113,8 +115,9 @@ class Piece:
                             self.availAttacks.append([nr, nc])
                     elif(queue[0][2] == self.moveDist + 1 and self.pieceType == 'h' and isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is not self.team):
                             self.availAttacks.append([nr, nc])
+                            self.specialAttacks.append([nr, nc])
                             self.availMoves.append([nr, nc])
-                            self.surprise = True
+                            # self.surprise = True
                     
 
         
@@ -157,8 +160,6 @@ class Piece:
                     if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 1 and moves[xSearch][ySearch].team != team):
                         self.availMoves.append([xSearch, ySearch])
                         self.availAttacks.append([xSearch, ySearch])
-            print("Avail Moves Rook: ", self.availMoves)
-            print("Avail Attacks Rook: ", self.availAttacks)
         self.availMoves = self.remove_deuplicates(self.availMoves)
         self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
@@ -187,13 +188,13 @@ class Piece:
 
         return newBoard
 
-    def capture(self, defender, dice, rookRanged):
-        print("In capture")
-        # return boolean and new board?
-        newBoard = Piece.chessboard
+    # takes in defender, if dice val is given (should update board or not), and if the attack is a ranged rook attack
+    # return true if capture is successful
+    def capture(self, defender, shouldUpdate, rookRanged):
         result = False
-        testDiceRoll = 6
-        # realDiceRoll = CHESSBOARD.roll_value()
+        roll = Piece.diceVal
+        print(roll)
+        
         # find index to use
         attackIndex = Piece.pieceData.index(self.pieceType)
         defenderIndex = Piece.pieceData.index(defender.pieceType)
@@ -202,28 +203,22 @@ class Piece:
         # on capture, set attacked square to null and call move on that square
         # unsuccessful, just return board
 
-        if(str(testDiceRoll) in str(Piece.captureMatrix[attackIndex][defenderIndex])): # and self.pieceType != 'r'):
+        # horse surprise attack
+        if(defender.location in self.specialAttacks and roll < 6 and shouldUpdate == True):
+            roll += 1
+            print("If surprise, roll: ", roll)
+
+        if(str(roll) in str(Piece.captureMatrix[attackIndex][defenderIndex])):
             result = True
             # then replace piece with attacker.
 
-            if (dice == False and rookRanged): 
+            if (shouldUpdate == True and rookRanged): 
                 defender.kill_piece()
                 return result
             
-            if dice == False:
+            if shouldUpdate == True:
                 defender.replace_piece(self)
             
-            ''' OLD REPLACE CODE
-            Piece.graveyard.append(defender)
-            Piece.chessboard[defender.location[0]][defender.location[1]] = self
-            '''
-
-        '''# Rook exception done in main ?
-        elif self.pieceType == 'r':
-            
-            Piece.graveyard.append(defender)
-            Piece.chessboard[defender.location[0]][defender.location[1]] = None
-            '''
 
         print("Graveyard: ", Piece.graveyard)
         print("Chessboard: \n", Piece.chessboard)
@@ -294,8 +289,8 @@ class Piece:
 
         Piece.chessboard[0, 0] = Piece("br1", "r", 1, 2, [0, 0], False)
         Piece.chessboard[0, 7] = Piece("br2", "r", 1, 2, [0, 7], False)
-        Piece.chessboard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1], False)
-        Piece.chessboard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6], False) # black back row
+        Piece.chessboard[0, 1] = Piece("bh1", "h", 1, 1, [0, 1], False)
+        Piece.chessboard[0, 6] = Piece("bh2", "h", 1, 3, [0, 6], False) # black back row
         Piece.chessboard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2], False)
         Piece.chessboard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5], False)
         Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4], False)
