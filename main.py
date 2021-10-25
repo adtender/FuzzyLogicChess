@@ -14,6 +14,8 @@ class CHESSBOARD:
     top_offset, side_offset = 200, 100
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
+    turns = -1 # -1 for white, 1 for black
+    corpsPlayed = 111 # 1 for able to be played, 2 for unable
     locationLock = []
     locationLockedIn = False
     # note for heuristic
@@ -30,6 +32,7 @@ class CHESSBOARD:
         self.add_piece_objects()
         self.draw_board()
         self.pieces()
+        self.corps_rectangles()
         self.init_dice()
 
     def draw_board(self):
@@ -55,6 +58,28 @@ class CHESSBOARD:
 
     def add_piece_objects(self):
         Piece.gen_new_board()
+
+    def corps_rectangles(self):
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#a60314', tag =        "corpsb1r")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#a60314', tag =      "corpsb2r")             # black red
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#a60314', tag =      "corpsb3r")
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = self.color3, tag =      "corpsb1y")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = self.color3, tag =    "corpsb2y")             # black yellow
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = self.color3, tag =    "corpsb3y")
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#00a835', tag =        "corpsb1g")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#00a835', tag =      "corpsb2r")             # black green
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#00a835', tag =      "corpsb3g")
+        
+
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#a60314', tag =      "corpsw1r")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#a60314', tag =    "corpsw2r")             # white red
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#a60314', tag =    "corpsw3r")
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = self.color3, tag =    "corpsw1y")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = self.color3, tag =  "corpsw2y")             # white yellow
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = self.color3, tag =  "corpsw3y")
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#00a835', tag =      "corpsw1g")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#00a835', tag =    "corpsw2g")             # white green
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#00a835', tag =    "corpsw3g")
         
     def pieces(self):
         self.br = PhotoImage(file="./data/pieces/br.png")
@@ -149,9 +174,9 @@ class CHESSBOARD:
             self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
             Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
         if moveCheck == False and attackCheck: #rook attack from afar
-            # TODO: Implement special case attack
-            return
-        #print(Piece.chessboard)
+            self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+            Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
+        print(Piece.chessboard)
         self.locationLockedIn = False
 
 
@@ -168,6 +193,39 @@ class CHESSBOARD:
             y = array[i][1]
             highlight("move_locations", chessboard, x, y, color)
 
+    #def turn_forward(self, pieceObject):
+        #if pieceObject.team == -1:
+
+        #print()
+
+    def change_active_status(self, team, corps, reset):
+        for i in range(8):
+            for j in range(8):
+                if Piece.chessboard[i][j]:
+                    if Piece.chessboard[i][j].team == team:
+                        if reset:
+                            Piece.chessboard[i][j].active = True
+                        elif Piece.chessboard[i][j].corps == corps:
+                            Piece.chessboard[i][j].active = False
+
+    def clear_corps_indicator_highlight(self):
+        self.canvas.lower("corpsw1y")
+        self.canvas.lower("corpsw2y")
+        self.canvas.lower("corpsw3y")
+        self.canvas.lower("corpsb1y")
+        self.canvas.lower("corpsb2y")
+        self.canvas.lower("corpsb3y")
+
+    def reset_corps_inidcator(self, team):
+        if team == -1:
+            self.canvas.tag_raise("corpsw1g")
+            self.canvas.tag_raise("corpsw2g")
+            self.canvas.tag_raise("corpsw3g")
+        if team == 1:
+            self.canvas.tag_raise("corpsb1g")
+            self.canvas.tag_raise("corpsb2g")
+            self.canvas.tag_raise("corpsb3g")
+
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
@@ -181,13 +239,24 @@ def highlight(htag, chessboard, yBoard, xBoard, color):
 
 def highlight_corps(chessboard, yBoard, xBoard):
     #print(yBoard, xBoard)
+    
     for i in range(8):
         for j in range(8):
-            if Piece.chessboard[i][j]:
+            if Piece.chessboard[i][j] and Piece.chessboard[i][j].active:
+                team, sTeam = Piece.chessboard[i][j].team, Piece.chessboard[yBoard][xBoard].team
+                corps, sCorps = Piece.chessboard[i][j].corps, Piece.chessboard[yBoard][xBoard].corps
                 if (Piece.chessboard[i][j].corps == Piece.chessboard[yBoard][xBoard].corps and
                 Piece.chessboard[i][j].team == Piece.chessboard[yBoard][xBoard].team):
                     highlight("corpsHlight", chessboard, i, j, chessboard.color6)
                     chessboard.canvas.lower("corpsHlight")
+                    if team == -1:
+                        if corps == 1: chessboard.canvas.tag_raise("corpsw1y")
+                        if corps == 2: chessboard.canvas.tag_raise("corpsw2y")
+                        if corps == 3: chessboard.canvas.tag_raise("corpsw3y")
+                    if team == 1:
+                        if corps == 1: chessboard.canvas.tag_raise("corpsb1y")
+                        if corps == 2: chessboard.canvas.tag_raise("corpsb2y")
+                        if corps == 3: chessboard.canvas.tag_raise("corpsb3y")
     
 def on_click(event, chessboard):
     chessboard.canvas.delete("move_locations")
@@ -217,7 +286,7 @@ def motion(event, chessboard):
 
     chessboard.canvas.delete("hlight")
     chessboard.canvas.delete("corpsHlight")
-    #print(chessboard.x1, chessboard.y1)
+    chessboard.clear_corps_indicator_highlight()
     if x > 0 and x < 512 and y > 0 and y < 512:
         chessboard.loc = str(overChar) + str(down)
         chessboard.x1 = over-64
@@ -226,17 +295,19 @@ def motion(event, chessboard):
         xBoard = chessboard.x1 - 1
         piece = Piece.chessboard[yBoard][xBoard]
         highlight("hlight", chessboard, yBoard, xBoard, chessboard.color3)
-        chessboard.canvas.tag_raise("move_locations")
+        #chessboard.canvas.tag_raise("move_locations")
         if Piece.chessboard[yBoard][xBoard]:
             chessboard.canvas.delete("corpsHlight")
+            #chessboard.canvas.tag_raise(piece)
+            highlight_corps(chessboard, yBoard, xBoard)            
             chessboard.canvas.tag_raise(piece)
-            highlight_corps(chessboard, yBoard, xBoard)
         else:
             chessboard.canvas.delete("corpsHlight")
-        chessboard.canvas.lower("move_locations")
+            chessboard.canvas.lower("move_locations")
+        #chessboard.canvas.lower("corpsHlight")
+        #chessboard.canvas.lower("move_locations")
+        
         chessboard.canvas.lower("board")
-
-
 
 def main():
     root = tk.Tk()

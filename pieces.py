@@ -15,13 +15,13 @@ class Piece:
     activePieces = []
     graveyard = []
 
-    def __init__(self, id, type, team, corps, loc):
+    def __init__(self, id, type, team, corps, loc, active):
         self.pieceID = id
         self.pieceType = type
         self.team = team
         self.corps = corps
         self.location = loc
-        self.active = True
+        self.active = active
         Piece.activePieces.append(self)
 
         if(type == "h"):
@@ -245,42 +245,42 @@ class Piece:
     def gen_new_board():
         # [Row, Column], [Down, Over]
 
-        # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array)
-        Piece.chessboard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0])
-        Piece.chessboard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1]) 
-        Piece.chessboard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2]) 
-        Piece.chessboard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3]) # white pawns
-        Piece.chessboard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4]) 
-        Piece.chessboard[6, 5] = Piece("wp6", "p", -1, 3, [6, 5])
-        Piece.chessboard[6, 6] = Piece("wp7", "p", -1, 3, [6, 6])
-        Piece.chessboard[6, 7] = Piece("wp8", "p", -1, 3, [6, 7])
+        # id, type, team (-1 = white, 1 = black), corps (1, 2, 3), loc (array), active
+        Piece.chessboard[6, 0] = Piece("wp1", "p", -1, 1, [6, 0], True)
+        Piece.chessboard[6, 1] = Piece("wp2", "p", -1, 1, [6, 1], True) 
+        Piece.chessboard[6, 2] = Piece("wp3", "p", -1, 1, [6, 2], True) 
+        Piece.chessboard[6, 3] = Piece("wp4", "p", -1, 2, [6, 3], True) # white pawns
+        Piece.chessboard[6, 4] = Piece("wp5", "p", -1, 2, [6, 4], True) 
+        Piece.chessboard[6, 5] = Piece("wp6", "p", -1, 3, [6, 5], True)
+        Piece.chessboard[6, 6] = Piece("wp7", "p", -1, 3, [6, 6], True)
+        Piece.chessboard[6, 7] = Piece("wp8", "p", -1, 3, [6, 7], True)
 
-        Piece.chessboard[7, 0] = Piece("wr1", "r", -1, 2, [7, 0])
-        Piece.chessboard[7, 7] = Piece("wr2", "r", -1, 2, [7, 7])
-        Piece.chessboard[7, 1] = Piece("wh1", "h", -1, 1, [7, 1])
-        Piece.chessboard[7, 6] = Piece("wh2", "h", -1, 3, [7, 6]) # white back row
-        Piece.chessboard[7, 2] = Piece("wb1", "b", -1, 1, [7, 2]) 
-        Piece.chessboard[7, 5] = Piece("wb2", "b", -1, 3, [7, 5])
-        Piece.chessboard[7, 4] = Piece("wk1", "k", -1, 2, [7, 4])
-        Piece.chessboard[7, 3] = Piece("wq1", "q", -1, 2, [7, 3])
+        Piece.chessboard[7, 0] = Piece("wr1", "r", -1, 2, [7, 0], True)
+        Piece.chessboard[7, 7] = Piece("wr2", "r", -1, 2, [7, 7], True)
+        Piece.chessboard[7, 1] = Piece("wh1", "h", -1, 1, [7, 1], True)
+        Piece.chessboard[7, 6] = Piece("wh2", "h", -1, 3, [7, 6], True) # white back row
+        Piece.chessboard[7, 2] = Piece("wb1", "b", -1, 1, [7, 2], True) 
+        Piece.chessboard[7, 5] = Piece("wb2", "b", -1, 3, [7, 5], True)
+        Piece.chessboard[7, 4] = Piece("wk1", "k", -1, 2, [7, 4], True)
+        Piece.chessboard[7, 3] = Piece("wq1", "q", -1, 2, [7, 3], True)
 
-        Piece.chessboard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0])
-        Piece.chessboard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1])
-        Piece.chessboard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2]) 
-        Piece.chessboard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3]) # black pawns
-        Piece.chessboard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4])
-        Piece.chessboard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5])
-        Piece.chessboard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6])
-        Piece.chessboard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7])
+        Piece.chessboard[1, 0] = Piece("bp1", "p", 1, 1, [1, 0], False)
+        Piece.chessboard[1, 1] = Piece("bp2", "p", 1, 1, [1, 1], False)
+        Piece.chessboard[1, 2] = Piece("bp3", "p", 1, 1, [1, 2], False) 
+        Piece.chessboard[1, 3] = Piece("bp4", "p", 1, 2, [1, 3], False) # black pawns
+        Piece.chessboard[1, 4] = Piece("bp5", "p", 1, 2, [1, 4], False)
+        Piece.chessboard[1, 5] = Piece("bp6", "p", 1, 3, [1, 5], False)
+        Piece.chessboard[1, 6] = Piece("bp7", "p", 1, 3, [1, 6], False)
+        Piece.chessboard[1, 7] = Piece("bp8", "p", 1, 3, [1, 7], False)
 
-        Piece.chessboard[0, 0] = Piece("br1", "r", 1, 2, [0, 0])
-        Piece.chessboard[0, 7] = Piece("br2", "r", 1, 2, [0, 7])
-        Piece.chessboard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1])
-        Piece.chessboard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6]) # black back row
-        Piece.chessboard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2])
-        Piece.chessboard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5])
-        Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4])
-        Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3])
+        Piece.chessboard[0, 0] = Piece("br1", "r", 1, 2, [0, 0], False)
+        Piece.chessboard[0, 7] = Piece("br2", "r", 1, 2, [0, 7], False)
+        Piece.chessboard[0, 1] = Piece("bh1", "k", 1, 1, [0, 1], False)
+        Piece.chessboard[0, 6] = Piece("bh2", "k", 1, 3, [0, 6], False) # black back row
+        Piece.chessboard[0, 2] = Piece("bb1", "b", 1, 1, [0, 2], False)
+        Piece.chessboard[0, 5] = Piece("bb2", "b", 1, 3, [0, 5], False)
+        Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4], False)
+        Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3], False)
     
 
     def set_board(newBoard):
