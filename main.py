@@ -195,7 +195,6 @@ class CHESSBOARD:
         if moveCheck and attackCheck: # moves with attacks
 
             b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
-            print(b)
             if b:
                 self.canvas.tag_raise("dice" + str(Piece.diceVal))
                 img = eval("self." # TODO: send to new method
@@ -206,12 +205,25 @@ class CHESSBOARD:
                 Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
         if moveCheck == False and attackCheck: #rook attack from afar
             b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
-            print(b)
             if b:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
-        print(Piece.chessboard)
+        #print(Piece.chessboard)
+
+        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j]:
+                        Piece.chessboard[i][j].active = False
+            print("Game over")
+            self.canvas.tag_raise("corpsw1r")
+            self.canvas.tag_raise("corpsw2r")
+            self.canvas.tag_raise("corpsw3r")
+            self.canvas.tag_raise("corpsb1r")
+            self.canvas.tag_raise("corpsb2r")
+            self.canvas.tag_raise("corpsb3r")
+
         
         self.locationLockedIn = False
 

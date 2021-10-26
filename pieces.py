@@ -221,13 +221,13 @@ class Piece:
             
 
         print("Graveyard: ", Piece.graveyard)
-        print("Chessboard: \n", Piece.chessboard)
+        #print("Chessboard: \n", Piece.chessboard)
 
         return result
 
     # use this for rook special case?
     def kill_piece(self):
-        Piece.graveyard.append(self)
+        Piece.graveyard.append(self.pieceID)
         Piece.activePieces.remove(self)
         Piece.chessboard[self.location[0]][self.location[1]] = None
         self.active = False
@@ -235,7 +235,7 @@ class Piece:
 
     # TAKES IN ATTACKER, NOT DEFENDER (defender is self)
     def replace_piece(self, attacker):
-        Piece.graveyard.append(self)
+        Piece.graveyard.append(self.pieceID)
         Piece.activePieces.remove(self)
         Piece.chessboard[self.location[0]][self.location[1]] = attacker
         Piece.chessboard[attacker.location[0]][attacker.location[1]] = None
