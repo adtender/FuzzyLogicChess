@@ -346,6 +346,7 @@ class CHESSBOARD:
                     if Piece.chessboard[i][j]:
                         Piece.chessboard[i][j].active = False
             print("Game over")
+            ### TODO On Game Over, have a popup that lets the user know who won, and gives 2 buttons to click to restart or view history
             self.game_over_popup()
             self.canvas.tag_raise("corpsw1r")
             self.canvas.tag_raise("corpsw2r")
@@ -359,9 +360,12 @@ class CHESSBOARD:
 
     def game_over_popup(self):
         win = Tk()
-        win.geometry("200x100")
+        win.geometry("375x100")
         win.title("")
-        Label(win, text= "Game over!", font=('Helvetica 18 bold')).place(x=20,y=20)
+        if ("wk1" in Piece.graveyard):
+            Label(win, text= "Game over, black wins!", font=('Helvetica 18 bold')).place(x=20,y=20)
+        if("bk1" in Piece.graveyard):
+            Label(win, text= "Game over, white wins!", font=('Helvetica 18 bold')).place(x=20,y=20)
 
     def graveyard(self, img, piece):
         if piece.team == -1:
@@ -535,6 +539,11 @@ def motion(event, chessboard):
     else:
         x, y = -1, -1
         chessboard.x1, chessboard.y1 = -100, -100
+
+# TODO: restart game, 
+# create a function outside of CHESSBOARD that gets called in game_over_popup
+# this function deletes the old board, generates a new board, and displays it
+# without extending the canvas
 
 def main():
     window = Tk()
