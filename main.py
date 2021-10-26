@@ -8,6 +8,7 @@ import random
 from PIL import ImageTk, Image
 from pieces import Piece
 from data.misc.tkinter_custom_button import TkinterCustomButton
+import sys
 
 class CHESSBOARD:
     x1, y1 = None, None
@@ -178,7 +179,7 @@ class CHESSBOARD:
         self.moves_and_attacks_highlight(availAttacks, chessboard, self.color5)
 
     # moveToCoords is a tuple
-    def piece_move(self, moveToCoords):
+    '''def piece_move(self, moveToCoords):
         moveCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves, moveToCoords)
         attackCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks, moveToCoords)
         print("moveCheck = ", moveCheck)
@@ -214,6 +215,61 @@ class CHESSBOARD:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
+        #print(Piece.chessboard)
+
+        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j]:
+                        Piece.chessboard[i][j].active = False
+            print("Game over")
+            self.canvas.tag_raise("corpsw1r")
+            self.canvas.tag_raise("corpsw2r")
+            self.canvas.tag_raise("corpsw3r")
+            self.canvas.tag_raise("corpsb1r")
+            self.canvas.tag_raise("corpsb2r")
+            self.canvas.tag_raise("corpsb3r")
+
+        
+        self.locationLockedIn = False
+        '''
+
+    def piece_move(self, moveToCoords, heldPiece):
+        moveCheck = self.check_valid_piece_move(heldPiece.availMoves, moveToCoords)
+        attackCheck = self.check_valid_piece_move(heldPiece.availAttacks, moveToCoords)
+        print("moveCheck = ", moveCheck)
+        print("attackCheck = ", attackCheck)
+
+        Piece.diceVal = self.rand_dice()
+
+        if (tuple(moveToCoords) not in heldPiece.availMoves and 
+        tuple(moveToCoords) not in heldPiece.availAttacks):
+            return
+
+        self.turn_forward(heldPiece)
+
+        if attackCheck == False and moveCheck: # moves with no attacks
+            img = eval("self." # TODO: send to new method
+                + heldPiece.pieceID[:-1])
+            self.canvas.delete(heldPiece.pieceID)
+            self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
+            heldPiece.move(moveToCoords[0], moveToCoords[1])
+        if moveCheck and attackCheck: # moves with attacks
+            self.canvas.tag_raise("dice" + str(Piece.diceVal))
+            b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
+            if b:
+                img = eval("self." # TODO: send to new method
+                    + heldPiece.pieceID[:-1])
+                self.canvas.delete(heldPiece.pieceID)
+                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+                self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
+                heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
+        if moveCheck == False and attackCheck: #rook attack from afar
+            b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
+            if b:
+                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+                #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
+                heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
         #print(Piece.chessboard)
 
         if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
@@ -363,10 +419,11 @@ def on_click(event, chessboard):
         chessboard.locationLockedIn = True
         chessboard.locationLock = [yLoc, xLoc]
         chessboard.piece_select(Piece.chessboard[yLoc][xLoc].location, chessboard)
-        chessboard.canvas.delete("copsHlight")
+        # chessboard.canvas.delete("copsHlight")      # typo?
         return
     if chessboard.locationLockedIn:
-        chessboard.piece_move([yLoc, xLoc])
+        # chessboard.piece_move([yLoc, xLoc])
+        chessboard.piece_move([yLoc, xLoc], Piece.chessboard[chessboard.locationLock[0]][chessboard.locationLock[1]])
         chessboard.locationLock = [None]
         chessboard.locationLockedIn = False
 

@@ -56,20 +56,20 @@ class RandomAI(ChessAI):
         # perform loop until either 
             # finds a piece with moves
             # or all pieces have no moves
-        for piece in self.legalMoves:
-            print(piece[0])
-            
-            if (len(Piece.find_piece(piece[0]).availMoves) == 0 
-                and len(Piece.find_piece(piece[0]).availAttacks) == 0 
-                and len(Piece.find_piece(piece[0]).specialAttacks) == 0):
-                continue 
-
-
+        while True:
 
             # Generate random piece index to find in legalMoves
             randIndex = random.randint(0, len(self.legalMoves)-1)
             randPiece = self.legalMoves[randIndex][0]                   # ID of randPiece
             moveList = self.legalMoves[randIndex][1]                    # set of legal moves based on randPiece
+
+            print("~~~~~~~~Current Piece to Check: ", randPiece)
+
+            # if no moves at all
+            if (len(Piece.find_piece(randPiece).availMoves) == 0 
+                and len(Piece.find_piece(randPiece).availAttacks) == 0 
+                and len(Piece.find_piece(randPiece).specialAttacks) == 0):
+                continue 
 
             # does the current piece have availmoves
             # implement Rook exception
@@ -82,8 +82,17 @@ class RandomAI(ChessAI):
                 # will this cause issues? should move be only called in main.py/CHESSBOARD?
                 Piece.find_piece(randPiece).move(randMove[0], randMove[1])      # call move?
                 break
+            elif noMoves and len(Piece.find_piece(randPiece).availAttacks) != 0:
+                randMove = moveList[random.randint(0, len(moveList)-1)]         # set of coordinates that is a legal move
+                Piece.find_piece(randPiece).move(randMove[0], randMove[1])      # call move?
+                break
+            else:
+                return "Move not found"
+
 
         Piece.check_all_moves()
+        self.set_alive_pieces()
+        self.set_legal_moves()
         print("###########", randPiece, " to ", randMove, "###########\n", Piece.chessboard)
         return (randPiece, randMove)
 
