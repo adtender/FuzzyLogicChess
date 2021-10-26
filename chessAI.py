@@ -1,5 +1,6 @@
 import random
 from pieces import Piece 
+import time
 
 class ChessAI:
 
@@ -51,17 +52,23 @@ class RandomAI(ChessAI):
     def __init__(self, team) -> None:
         super().__init__(team)
 
-    def move(self):
+    def move(self, corps):
         
         # perform loop until either 
             # finds a piece with moves
             # or all pieces have no moves
+
+        corpsMoves = [] # new array of tuples corresponding to corps
+        for piece in self.legalMoves:
+            if Piece.find_piece(piece[0]).corps == corps:
+                corpsMoves.append(piece)
+
         while True:
 
             # Generate random piece index to find in legalMoves
-            randIndex = random.randint(0, len(self.legalMoves)-1)
-            randPiece = self.legalMoves[randIndex][0]                   # ID of randPiece
-            moveList = self.legalMoves[randIndex][1]                    # set of legal moves based on randPiece
+            randIndex = random.randint(0, len(corpsMoves)-1)
+            randPiece = corpsMoves[randIndex][0]                   # ID of randPiece
+            moveList = corpsMoves[randIndex][1]                    # set of legal moves based on randPiece
 
             print("~~~~~~~~Current Piece to Check: ", randPiece)
 
@@ -98,21 +105,30 @@ class RandomAI(ChessAI):
 
 
 
+
 ### driver code ###
 Piece.gen_new_board()
 
-ai1 = RandomAI(1)
-print(RandomAI.chessboard)
-ai1.set_alive_pieces()
-ai1.set_legal_moves()
+i = -1
+while True:
 
-print("Alive pieces: ", ai1.alivePieces)
-print("Legal Moves: ", ai1.legalMoves)
+    ai1 = RandomAI(i)
+    ai1.set_alive_pieces()
+    ai1.set_legal_moves()
 
-for i in range(3):
-    print("Move: ", ai1.move())
+    activeCorps = [1, 1, 1]
 
-print("-----------------------------------\nRandom AI Chessboard after 3 random moves\n", RandomAI.chessboard)
+    # print("Alive pieces: ", ai1.alivePieces)
+    # print("Legal Moves: ", ai1.legalMoves)
 
-print("-----------------------------------\nPiece.chessboard after 3 random moves\n", Piece.chessboard)
+    while activeCorps != [2, 2, 2]:
+        randomCorps = random.randint(1, 3)
+        if(activeCorps[randomCorps-1] == 1):
+            time.sleep(3)
+            print("Move: ", ai1.move(randomCorps))
+            activeCorps[randomCorps-1] += 1
+            print("\n\n\n")
+    
+    i *= -1
+    print("____________________________________")
 

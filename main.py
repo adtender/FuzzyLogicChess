@@ -24,6 +24,7 @@ class CHESSBOARD:
     locationLock = []
     locationLockedIn = False
     white_kill, black_kill = 1, 1
+    whiteAI, BlackAI = False, False
     db_loc = './data/db/'
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
