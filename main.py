@@ -22,6 +22,7 @@ class CHESSBOARD:
     corpsPlayed = [1,1,1] # 1 for able to be played, 2 for unable
     locationLock = []
     locationLockedIn = False
+    white_kill, black_kill = 1, 1
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
@@ -204,6 +205,8 @@ class CHESSBOARD:
             if b:
                 img = eval("self." # TODO: send to new method
                     + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
+                gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
+                self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
                 self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
@@ -211,6 +214,8 @@ class CHESSBOARD:
         if moveCheck == False and attackCheck: #rook attack from afar
             b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
             if b:
+                gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
+                self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
@@ -232,8 +237,15 @@ class CHESSBOARD:
         
         self.locationLockedIn = False
 
-    def graveyard(self):
-        print
+    def graveyard(self, img, piece):
+        if piece.team == -1:
+            self.canvas.create_image(32 * (self.white_kill) - 15, 50, 
+                image=img, anchor="center")
+            self.white_kill += 1.6
+        if piece.team == 1:
+            self.canvas.create_image(32 * (self.black_kill) - 15, 675, 
+                image=img, anchor="center")
+            self.black_kill += 1.6  
 
     def check_valid_piece_move(self, availMovesOrAttacks, moveToCoords):
         for i in range(len(availMovesOrAttacks)):
@@ -416,6 +428,7 @@ def main():
 
     def restart():
         os.execl(sys.executable, sys.executable, *sys.argv)
+
     def load():
         pass
 
@@ -425,7 +438,6 @@ def main():
     def credit():
         pass
 
-   
     def start():
         window.destroy()
         root = Tk()
@@ -528,8 +540,6 @@ def main():
                              
         root.mainloop()
 
-
-
     endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
     endSplash.place(x=500, y=295)
 
@@ -540,9 +550,6 @@ def main():
     endSplash2.place(x=500, y=455)
 
     window.mainloop()
-
-
-
 
 if __name__ == "__main__":
     main()
