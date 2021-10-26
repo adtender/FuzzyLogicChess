@@ -99,7 +99,8 @@ class Piece:
                     nr, nc = coord[0]+dir[0], coord[1]+dir[1]
                     # Checks for:
                     # is square to check out of bounds
-                    # is square to check
+                    # is square to check a friendly piece
+                    # is square to check 
                     if (nr < 0 or nr >= R or nc < 0 or nc >= C or 
                     (isinstance(moves[nr][nc], Piece) and moves[nr][nc].team is self.team) 
                     or visited[nr][nc]
