@@ -177,6 +177,7 @@ class CHESSBOARD:
         self.moves_and_attacks_highlight(availMoves, chessboard, self.color4)
         self.moves_and_attacks_highlight(availAttacks, chessboard, self.color5)
 
+    # moveToCoords is a tuple
     def piece_move(self, moveToCoords):
         moveCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves, moveToCoords)
         attackCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks, moveToCoords)
