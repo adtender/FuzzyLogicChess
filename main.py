@@ -2,8 +2,8 @@ from tkinter import *
 import tkinter as tk
 import numpy as np
 import os
-import json
 import math
+import sqlite3
 import random
 from PIL import ImageTk, Image
 from pieces import Piece
@@ -23,6 +23,7 @@ class CHESSBOARD:
     locationLock = []
     locationLockedIn = False
     white_kill, black_kill = 1, 1
+    db_loc = './data/db/'
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
@@ -446,6 +447,13 @@ def main():
         icon = PhotoImage(file="./data/misc/mainIcon.png")
         root.iconphoto(False, icon)
         root.resizable(False, False)
+        chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db')
+        chessboard.cursor = chessboard.conn.cursor()
+        try:
+            chessboard.cursor.execute('DROP TABLE HISTORY;')
+            chessboard.conn.commit
+        except:
+            print("No table")
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
