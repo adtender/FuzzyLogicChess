@@ -346,6 +346,7 @@ class CHESSBOARD:
                     if Piece.chessboard[i][j]:
                         Piece.chessboard[i][j].active = False
             print("Game over")
+            self.game_over_popup()
             self.canvas.tag_raise("corpsw1r")
             self.canvas.tag_raise("corpsw2r")
             self.canvas.tag_raise("corpsw3r")
@@ -355,6 +356,12 @@ class CHESSBOARD:
 
         
         self.locationLockedIn = False
+
+    def game_over_popup(self):
+        win = Tk()
+        win.geometry("200x100")
+        win.title("")
+        Label(win, text= "Game over!", font=('Helvetica 18 bold')).place(x=20,y=20)
 
     def graveyard(self, img, piece):
         if piece.team == -1:
