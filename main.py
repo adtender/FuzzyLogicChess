@@ -7,6 +7,7 @@ import math
 import random
 from PIL import ImageTk, Image
 from pieces import Piece
+from data.misc.tkinter_custom_button import TkinterCustomButton
 
 class CHESSBOARD:
     x1, y1 = None, None
@@ -14,7 +15,7 @@ class CHESSBOARD:
     color1, color2, color3, color4, color5, color6 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c", "#9c1e37", "#b9c288"
     rows, columns = 8, 8
     dim_square = 64
-    top_offset, side_offset = 200, 100
+    top_offset, side_offset = 200, 400
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
     turns = -1 # -1 for white, 1 for black
@@ -37,6 +38,7 @@ class CHESSBOARD:
         self.pieces()
         self.corps_rectangles()
         self.init_dice()
+        self.history_box()
 
     def draw_board(self):
         intCheck = 0
@@ -61,6 +63,9 @@ class CHESSBOARD:
 
     def add_piece_objects(self):
         Piece.gen_new_board()
+
+    def history_box(self):
+        self.canvas.create_rectangle(525, 291, 913, 612, outline='black')
 
     def corps_rectangles(self):
         self.canvas.create_rectangle(2, 90, 190, 85, fill = self.color3, tag =      "corpsb1y")
@@ -142,12 +147,12 @@ class CHESSBOARD:
         self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
         self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
         self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice2 , tag="dice2")
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice3 , tag="dice3")
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice4")
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice5")
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice6")
-        self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice1")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice2 , tag="dice2")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice3 , tag="dice3")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice4 , tag="dice4")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice5 , tag="dice5")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice6 , tag="dice6")
+        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice1 , tag="dice1")
 
     def rand_dice(self):
         return random.randrange(1,6)
@@ -193,10 +198,9 @@ class CHESSBOARD:
             self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
             Piece.chessboard[self.locationLock[0]][self.locationLock[1]].move(moveToCoords[0], moveToCoords[1])
         if moveCheck and attackCheck: # moves with attacks
-
+            self.canvas.tag_raise("dice" + str(Piece.diceVal))
             b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
             if b:
-                self.canvas.tag_raise("dice" + str(Piece.diceVal))
                 img = eval("self." # TODO: send to new method
                     + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
                 self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
@@ -227,6 +231,8 @@ class CHESSBOARD:
         
         self.locationLockedIn = False
 
+    def graveyard(self):
+        print
 
     def check_valid_piece_move(self, availMovesOrAttacks, moveToCoords):
         for i in range(len(availMovesOrAttacks)):
@@ -294,6 +300,19 @@ class CHESSBOARD:
             self.canvas.tag_raise("corpsb1g")
             self.canvas.tag_raise("corpsb2g")
             self.canvas.tag_raise("corpsb3g")
+
+    def rules_window(self):
+        
+        global rule1, rule2
+        top = Toplevel()
+        top.title('Rule Set')
+        
+        rule1 = ImageTk.PhotoImage(Image.open("./data/misc/FL-MCR1.jpg").resize((680, 880), Image.ANTIALIAS))
+        rule2 = ImageTk.PhotoImage(Image.open("./data/misc/FL-MCR2.jpg").resize((680, 880), Image.ANTIALIAS))
+        #Label(top, image=rule1).pack()
+        #Label(top, image=rule2).pack()
+        Label(top, image=rule1).grid(row=0, column=0)
+        Label(top, image=rule2).grid(row=0, column=1)
 
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
@@ -416,7 +435,29 @@ def main():
         root.resizable(False, False)
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
-    
+
+        rules_button = TkinterCustomButton(text="Rules", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/2.32,
+                                            hover=True,
+                                            command=chessboard.rules_window)
+        history_button = TkinterCustomButton(text="History", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/2.32,
+                                            hover=True)
+        rules_button.place(relx=0.568, rely=0.26)
+        history_button.place(relx=0.568, rely=0.32)
+        
         #root.mainloop()
         navIcon = PhotoImage(file="./data/Image/menu.png")
         closeIcon = PhotoImage(file="./data/Image/close.png")
