@@ -38,6 +38,7 @@ class CHESSBOARD:
     def __init__(self, parent):
         canvas_width = self.width
         canvas_height = self.height
+        self.parent = parent
         self.canvas = tk.Canvas(parent, width=canvas_width, height=canvas_height)
         self.canvas.pack(padx=8, pady=8)
         self.add_piece_objects()
@@ -362,6 +363,10 @@ class CHESSBOARD:
         win.geometry("200x100")
         win.title("")
         Label(win, text= "Game over!", font=('Helvetica 18 bold')).place(x=20,y=20)
+        game_over_restart(self.parent, self)
+        # CHESSBOARD(self.parent)
+        # self.parent.destroy()
+        # del self
 
     def graveyard(self, img, piece):
         if piece.team == -1:
@@ -446,6 +451,17 @@ class CHESSBOARD:
         #Label(top, image=rule2).pack()
         Label(top, image=rule1).grid(row=0, column=0)
         Label(top, image=rule2).grid(row=0, column=1)
+
+def game_over_restart(root, self): # self.parent, self
+    # CHESSBOARD(self.parent)
+    # self.parent.destroy()
+    # del self
+    CHESSBOARD(root)
+    root.destroy()
+    Piece.chessboard.check_all_moves
+    Piece.chessboard.graveyard = []
+    start("")
+
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
@@ -546,184 +562,13 @@ def main():
     window.resizable(False, False)
     label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    def restart():
-        os.execl(sys.executable, sys.executable, *sys.argv)
 
-    def load():
-        pass
+    # here
+   
 
-    def save():
-        pass
-
-    def credit():
-        pass
-
-    def start():
-        window.destroy()
-        root = Tk()
-        root.title('Fuzzy-Logic Medieval Chess')
-        chessboard = CHESSBOARD(root)
-        icon = PhotoImage(file="./data/misc/mainIcon.png")
-        root.iconphoto(False, icon)
-        root.resizable(False, False)
-        chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db')
-        chessboard.cursor = chessboard.conn.cursor()
-        try:
-            chessboard.cursor.execute('DROP TABLE HISTORY;')
-            chessboard.conn.commit
-        except:
-            print("No table")
-        root.bind("<Motion>", lambda event: motion(event, chessboard))
-        root.bind("<Button-1>", lambda event: on_click(event, chessboard))
-
-        def white_ai():
-            '''
-            if chessboard.whiteAI == False:
-                white_ai_button.set_text("White AI: On")
-                chessboard.whiteAI = True
-                chessboard.ai_function()
-            elif chessboard.whiteAI == True:
-                white_ai_button.set_text("White AI: Off") 
-                chessboard.whiteAI = False
-            '''
-            
-            if chessboard.whiteAI == False:
-                chessboard.whiteAI = True
-                chessboard.ai_function()
-                chessboard.whiteAI = False
-            
-        
-
-
-        def black_ai():
-            '''
-            if chessboard.BlackAI == False:
-                black_ai_button.set_text("Black AI: On")
-                chessboard.BlackAI = True
-                chessboard.ai_function()
-            elif chessboard.BlackAI == True:
-                black_ai_button.set_text("Black AI: Off")
-                chessboard.BlackAI = False
-            '''
-            if chessboard.BlackAI == False:
-                chessboard.BlackAI = True
-                chessboard.ai_function()
-                chessboard.BlackAI = False
-
-        rules_button = TkinterCustomButton(text="Rules", 
-                                            bg_color=None,
-                                            fg_color="#58636F",
-                                            border_color=None,
-                                            hover_color="#808B96",
-                                            corner_radius=10,
-                                            border_width=0,
-                                            width= chessboard.width/2.32,
-                                            hover=True,
-                                            command=chessboard.rules_window)
-        history_button = TkinterCustomButton(text="History", 
-                                            bg_color=None,
-                                            fg_color="#58636F",
-                                            border_color=None,
-                                            hover_color="#808B96",
-                                            corner_radius=10,
-                                            border_width=0,
-                                            width= chessboard.width/2.32,
-                                            hover=True)
-        black_ai_button = TkinterCustomButton(text="Black AI", 
-                                            bg_color=None,
-                                            fg_color="#58636F",
-                                            border_color=None,
-                                            hover_color="#808B96",
-                                            corner_radius=10,
-                                            border_width=0,
-                                            width= chessboard.width/3,
-                                            hover=True,
-                                            command=black_ai)
-        white_ai_button = TkinterCustomButton(text="White AI", 
-                                            bg_color=None,
-                                            fg_color="#58636F",
-                                            border_color=None,
-                                            hover_color="#808B96",
-                                            corner_radius=10,
-                                            border_width=0,
-                                            width= chessboard.width/3,
-                                            hover=True,
-                                            command=white_ai)
-        rules_button.place(relx=0.568, rely=0.26)
-        history_button.place(relx=0.568, rely=0.32)
-        black_ai_button.place(relx=0.663, rely= 0.135)
-        white_ai_button.place(relx=0.663, rely= 0.195)
-        
-        #root.mainloop()
-        navIcon = PhotoImage(file="./data/Image/menu.png")
-        closeIcon = PhotoImage(file="./data/Image/close.png")
-        global btnState
-        btnState = False
-            # setting switch function:
-        def switch():
-                global btnState
-                if btnState:
-                    # create animated Navbar closing:
-                    #for x in range(301):
-                    navRoot.place(x=-301, y=0)
-                    # topFrame.update()
-
-                    # resetting widget colors:
-                    homeLabel.config(bg="#58636F")
-                    topFrame.config(bg="#58636F")
-                    root.config(bg="gray17")
-
-                    # turning button OFF:
-                    btnState = False
-                else:
-                    # make root dim:
-                    homeLabel.config(bg="#58636F")
-                    topFrame.config(bg="#58636F")
-                    root.config(bg="#58636F")
-
-                    # created animated Navbar opening:
-                  #  for x in range(-300, 0):
-                    navRoot.place(x=0, y=0)
-                      #  topFrame.update()
-
-                    # turing button ON:
-                    btnState = True
-
-            # top Navigation bar:
-        topFrame = tk.Frame(root, bg="#58636F")
-        topFrame.pack(side="top", fill=tk.X)
-
-            # Header label text:
-        homeLabel = tk.Label(topFrame, text="Fuzzy-Logic Medieval Chess", font="Bahnschrift 15", bg="#58636F", fg="white", height=2, padx=20)
-        homeLabel.pack(side="right")
-       
-            # Navbar button:
-        navbarBtn = tk.Button(topFrame, image=navIcon, bg="#58636F", activebackground="#58636F", bd=0, padx=20, command=switch)
-        navbarBtn.place(x=10, y=10)
-
-            # setting Navbar frame
-        navRoot = tk.Frame(root, bg="gray17", height=1000, width=300)
-        navRoot.place(x=-300, y=0)
-        tk.Label(navRoot, font="Bahnschrift 15", bg="#58636F", fg="black", height=2, width=300, padx=20).place(x=0, y=0)
-
-            # set y-coordinate of Navbar widgets:
-        y = 80
-  
-        tk.Button(navRoot, text="Restart", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0, command=restart).place(x=25, y=y)
-        tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command =save).place(x=25, y=115) 
-        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=load).place(x=25, y=150)
-        tk.Button(navRoot, text="About", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=credit).place(x=25, y=185)
-        tk.Button(navRoot, text="Exit", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=root.quit).place(x=25, y=220)
-       
-        y += 40 
-
-            # Navbar Close Button:
-        closeBtn = tk.Button(navRoot, image=closeIcon, bg="#58636F", activebackground="#58636F", bd=0, command=switch)
-        closeBtn.place(x=250, y=10)   
-                             
-        root.mainloop()
-
-    endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
+    #endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start(window), borderwidth=2)
+    endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=lambda : start())
+    #xbBrowse = Button(frameN, text="Browse...", font=fontReg, command=lambda : self.get_dir(xbPath))
     endSplash.place(x=500, y=295)
 
     endSplash1 = Button(window, text="LOAD GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15,command=load, borderwidth=2)
@@ -733,6 +578,172 @@ def main():
     endSplash2.place(x=500, y=455)
 
     window.mainloop()
+
+def restart():
+    os.execl(sys.executable, sys.executable, *sys.argv)
+
+def load():
+    pass
+
+def save():
+    pass
+
+def credit():
+    pass
+
+def start():
+
+    #if window != "":
+    #    window.destroy()
+
+    root = tk.Toplevel()
+    
+    root.title('Fuzzy-Logic Medieval Chess')
+    chessboard = CHESSBOARD(root)
+    
+    icon = PhotoImage(file="./data/misc/mainIcon.png")
+    root.iconphoto(False, icon)
+    root.resizable(False, False)
+    chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db')
+    chessboard.cursor = chessboard.conn.cursor()
+    try:
+        chessboard.cursor.execute('DROP TABLE HISTORY;')
+        chessboard.conn.commit
+    except:
+        print("No table")
+    root.bind("<Motion>", lambda event: motion(event, chessboard))
+    root.bind("<Button-1>", lambda event: on_click(event, chessboard))
+
+    def white_ai():            
+        if chessboard.whiteAI == False:
+            chessboard.whiteAI = True
+            chessboard.ai_function()
+            chessboard.whiteAI = False
+        
+    def black_ai():
+        if chessboard.BlackAI == False:
+            chessboard.BlackAI = True
+            chessboard.ai_function()
+            chessboard.BlackAI = False
+
+    rules_button = TkinterCustomButton(text="Rules", 
+                                        bg_color=None,
+                                        fg_color="#58636F",
+                                        border_color=None,
+                                        hover_color="#808B96",
+                                        corner_radius=10,
+                                        border_width=0,
+                                        width= chessboard.width/2.32,
+                                        hover=True,
+                                        command=chessboard.rules_window)
+    history_button = TkinterCustomButton(text="History", 
+                                        bg_color=None,
+                                        fg_color="#58636F",
+                                        border_color=None,
+                                        hover_color="#808B96",
+                                        corner_radius=10,
+                                        border_width=0,
+                                        width= chessboard.width/2.32,
+                                        hover=True)
+    black_ai_button = TkinterCustomButton(text="Black AI", 
+                                        bg_color=None,
+                                        fg_color="#58636F",
+                                        border_color=None,
+                                        hover_color="#808B96",
+                                        corner_radius=10,
+                                        border_width=0,
+                                        width= chessboard.width/3,
+                                        hover=True,
+                                        command=black_ai)
+    white_ai_button = TkinterCustomButton(text="White AI", 
+                                        bg_color=None,
+                                        fg_color="#58636F",
+                                        border_color=None,
+                                        hover_color="#808B96",
+                                        corner_radius=10,
+                                        border_width=0,
+                                        width= chessboard.width/3,
+                                        hover=True,
+                                        command=white_ai)
+    #rules_button.place(relx=0.568, rely=0.26)
+    #history_button.place(relx=0.568, rely=0.32)
+    #black_ai_button.place(relx=0.663, rely= 0.135)
+    #white_ai_button.place(relx=0.663, rely= 0.195)
+
+    tk.Button(rules_button).grid
+    tk.Button(history_button).grid
+    tk.Button(black_ai_button).grid
+    tk.Button(white_ai_button).grid
+    
+    navIcon = PhotoImage(file="./data/Image/menu.png")
+    closeIcon = PhotoImage(file="./data/Image/close.png")
+    global btnState
+    btnState = False
+        # setting switch function:
+    def switch():
+            global btnState
+            if btnState:
+                # create animated Navbar closing:
+                #for x in range(301):
+                navRoot.place(x=-301, y=0)
+                # topFrame.update()
+
+                # resetting widget colors:
+                homeLabel.config(bg="#58636F")
+                topFrame.config(bg="#58636F")
+                root.config(bg="gray17")
+
+                # turning button OFF:
+                btnState = False
+            else:
+                # make root dim:
+                homeLabel.config(bg="#58636F")
+                topFrame.config(bg="#58636F")
+                root.config(bg="#58636F")
+
+                # created animated Navbar opening:
+                #  for x in range(-300, 0):
+                navRoot.place(x=0, y=0)
+                    #  topFrame.update()
+
+                # turing button ON:
+                btnState = True
+
+        # top Navigation bar:
+    topFrame = tk.Frame(root, bg="#58636F")
+    topFrame.pack(side="top", fill=tk.X)
+
+        # Header label text:
+    homeLabel = tk.Label(topFrame, text="Fuzzy-Logic Medieval Chess", font="Bahnschrift 15", bg="#58636F", fg="white", height=2, padx=20)
+    homeLabel.pack(side="right")
+    
+        # Navbar button:
+    navbarBtn = tk.Button(topFrame, image=navIcon, bg="#58636F", activebackground="#58636F", bd=0, padx=20, command=switch)
+    navbarBtn.place(x=10, y=10)
+
+        # setting Navbar frame
+    navRoot = tk.Frame(root, bg="gray17", height=1000, width=300)
+    navRoot.place(x=-300, y=0)
+    tk.Label(navRoot, font="Bahnschrift 15", bg="#58636F", fg="black", height=2, width=300, padx=20).place(x=0, y=0)
+
+        # set y-coordinate of Navbar widgets:
+    y = 80
+
+    tk.Button(navRoot, text="Restart", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0, command=restart).place(x=25, y=y)
+    tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command =save).place(x=25, y=115) 
+    tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=load).place(x=25, y=150)
+    tk.Button(navRoot, text="About", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=credit).place(x=25, y=185)
+    tk.Button(navRoot, text="Exit", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=root.quit).place(x=25, y=220)
+    
+    y += 40 
+
+        # Navbar Close Button:
+    closeBtn = tk.Button(navRoot, image=closeIcon, bg="#58636F", activebackground="#58636F", bd=0, command=switch)
+    closeBtn.place(x=250, y=10)   
+    
+                            
+    root.mainloop()
+    
 
 if __name__ == "__main__":
     main()
