@@ -181,6 +181,28 @@ class CHESSBOARD:
         self.moves_and_attacks_highlight(availMoves, chessboard, self.color4)
         self.moves_and_attacks_highlight(availAttacks, chessboard, self.color5)
 
+    '''
+    function
+        rng 1-3
+
+        if blackAI = True
+            if black corps 1 is active
+                ai = RandomAI()
+                ...
+            if black corps 2 is active
+                ai = RandomAI()
+                ...
+            if black corps 3 is active
+                time.sleep(3)
+                ai = RandomAI() # returns piece id, array of 2
+                ai.set_alive_pieces()
+                ai.set_legal_moves()
+                moveInfo = ai.move(randomCorps)
+                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+                piece_move(pieceHeld, moveInfo[1]) # moveInfo[1] is a tuple
+                delete ai
+    '''
+
     # moveToCoords is a tuple
     def piece_move(self, moveToCoords, heldPiece):
         moveCheck = self.check_valid_piece_move(heldPiece.availMoves, moveToCoords)
@@ -331,14 +353,6 @@ class CHESSBOARD:
         Label(top, image=rule1).grid(row=0, column=0)
         Label(top, image=rule2).grid(row=0, column=1)
 
-    def white_ai(self):
-        #chessboard.white_ai_button.text = "White AI: On"
-        print()
-
-    def black_ai(self, chessboard):
-        print()
-
-
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
         ((xBoard) * 64) + chessboard.dim_square, ((yBoard + 1) * 64) + chessboard.dim_square + 35, 
@@ -468,6 +482,25 @@ def main():
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
+        def white_ai():
+            if chessboard.whiteAI == False:
+                white_ai_button.set_text("White AI: On")
+                chessboard.whiteAI = True
+
+
+
+            elif chessboard.whiteAI == True:
+                white_ai_button.set_text("White AI: Off")
+                chessboard.whiteAI = False
+
+        def black_ai():
+            if chessboard.BlackAI == False:
+                black_ai_button.set_text("Black AI: On")
+                chessboard.BlackAI = True
+            elif chessboard.BlackAI == True:
+                black_ai_button.set_text("Black AI: Off")
+                chessboard.BlackAI = False
+
         rules_button = TkinterCustomButton(text="Rules", 
                                             bg_color=None,
                                             fg_color="#58636F",
@@ -496,7 +529,7 @@ def main():
                                             border_width=0,
                                             width= chessboard.width/3,
                                             hover=True,
-                                            )
+                                            command=black_ai)
         white_ai_button = TkinterCustomButton(text="White AI: OFF", 
                                             bg_color=None,
                                             fg_color="#58636F",
@@ -506,7 +539,7 @@ def main():
                                             border_width=0,
                                             width= chessboard.width/3,
                                             hover=True,
-                                            )
+                                            command=white_ai)
         rules_button.place(relx=0.568, rely=0.26)
         history_button.place(relx=0.568, rely=0.32)
         black_ai_button.place(relx=0.663, rely= 0.135)
