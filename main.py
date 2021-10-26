@@ -179,61 +179,6 @@ class CHESSBOARD:
         self.moves_and_attacks_highlight(availAttacks, chessboard, self.color5)
 
     # moveToCoords is a tuple
-    '''def piece_move(self, moveToCoords):
-        moveCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves, moveToCoords)
-        attackCheck = self.check_valid_piece_move(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks, moveToCoords)
-        print("moveCheck = ", moveCheck)
-        print("attackCheck = ", attackCheck)
-
-        Piece.diceVal = self.rand_dice()
-
-        if (tuple(moveToCoords) not in Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availMoves and 
-        tuple(moveToCoords) not in Piece.chessboard[self.locationLock[0]][self.locationLock[1]].availAttacks):
-            return
-
-        self.turn_forward(Piece.chessboard[self.locationLock[0]][self.locationLock[1]])
-
-        if attackCheck == False and moveCheck: # moves with no attacks
-            img = eval("self." # TODO: send to new method
-                + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
-            self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
-            self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
-            Piece.chessboard[self.locationLock[0]][self.locationLock[1]].move(moveToCoords[0], moveToCoords[1])
-        if moveCheck and attackCheck: # moves with attacks
-            self.canvas.tag_raise("dice" + str(Piece.diceVal))
-            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
-            if b:
-                img = eval("self." # TODO: send to new method
-                    + Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[:-1])
-                self.canvas.delete(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID)
-                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
-                self.add_piece(img, tuple(moveToCoords), str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID))
-                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
-        if moveCheck == False and attackCheck: #rook attack from afar
-            b = Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
-            if b:
-                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
-                #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
-                Piece.chessboard[self.locationLock[0]][self.locationLock[1]].capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
-        #print(Piece.chessboard)
-
-        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
-            for i in range(8):
-                for j in range(8):
-                    if Piece.chessboard[i][j]:
-                        Piece.chessboard[i][j].active = False
-            print("Game over")
-            self.canvas.tag_raise("corpsw1r")
-            self.canvas.tag_raise("corpsw2r")
-            self.canvas.tag_raise("corpsw3r")
-            self.canvas.tag_raise("corpsb1r")
-            self.canvas.tag_raise("corpsb2r")
-            self.canvas.tag_raise("corpsb3r")
-
-        
-        self.locationLockedIn = False
-        '''
-
     def piece_move(self, moveToCoords, heldPiece):
         moveCheck = self.check_valid_piece_move(heldPiece.availMoves, moveToCoords)
         attackCheck = self.check_valid_piece_move(heldPiece.availAttacks, moveToCoords)
