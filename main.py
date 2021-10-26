@@ -144,18 +144,18 @@ class CHESSBOARD:
         
     def init_dice(self):
         # beginning image
-        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice2 , tag="dice2")
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice3 , tag="dice3")
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice4 , tag="dice4")
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice5 , tag="dice5")
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice6 , tag="dice6")
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice1 , tag="dice1")
+        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((80, 80), Image.ANTIALIAS))
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice2 , tag="dice2")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice3 , tag="dice3")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice4 , tag="dice4")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice5 , tag="dice5")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice6 , tag="dice6")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice1 , tag="dice1")
 
     def rand_dice(self):
         return random.randrange(1,6)
@@ -330,6 +330,13 @@ class CHESSBOARD:
         Label(top, image=rule1).grid(row=0, column=0)
         Label(top, image=rule2).grid(row=0, column=1)
 
+    def white_ai(self):
+        #chessboard.white_ai_button.text = "White AI: On"
+        print()
+
+    def black_ai(self, chessboard):
+        print()
+
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
@@ -479,8 +486,30 @@ def main():
                                             border_width=0,
                                             width= chessboard.width/2.32,
                                             hover=True)
+        black_ai_button = TkinterCustomButton(text="Black AI: OFF", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/3,
+                                            hover=True,
+                                            )
+        white_ai_button = TkinterCustomButton(text="White AI: OFF", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/3,
+                                            hover=True,
+                                            )
         rules_button.place(relx=0.568, rely=0.26)
         history_button.place(relx=0.568, rely=0.32)
+        black_ai_button.place(relx=0.663, rely= 0.135)
+        white_ai_button.place(relx=0.663, rely= 0.195)
         
         #root.mainloop()
         navIcon = PhotoImage(file="./data/Image/menu.png")
