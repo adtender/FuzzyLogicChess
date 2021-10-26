@@ -32,6 +32,7 @@ class ChessAI:
             allMoves.append((piece.pieceID, piece.availMoves))
 
         self.legalMoves = allMoves
+        
         return allMoves
 
     def set_attacked_pieces(self):
@@ -87,11 +88,11 @@ class RandomAI(ChessAI):
                 randMove = moveList[random.randint(0, len(moveList)-1)]         # set of coordinates that is a legal move
                 # find piece in board and call move...
                 # will this cause issues? should move be only called in main.py/CHESSBOARD?
-                Piece.find_piece(randPiece).move(randMove[0], randMove[1])      # call move?
+                #Piece.find_piece(randPiece).move(randMove[0], randMove[1])      # call move?
                 break
             elif noMoves and len(Piece.find_piece(randPiece).availAttacks) != 0:
                 randMove = moveList[random.randint(0, len(moveList)-1)]         # set of coordinates that is a legal move
-                Piece.find_piece(randPiece).move(randMove[0], randMove[1])      # call move?
+                #Piece.find_piece(randPiece).move(randMove[0], randMove[1])      # call move?
                 break
             else:
                 return "Move not found"
@@ -109,6 +110,7 @@ class RandomAI(ChessAI):
 ### driver code ###
 Piece.gen_new_board()
 
+'''
 i = -1
 while True:
 
@@ -131,4 +133,4 @@ while True:
     
     i *= -1
     print("____________________________________")
-
+'''
