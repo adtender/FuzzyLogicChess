@@ -1,57 +1,51 @@
 from tkinter import *
 import tkinter as tk
 import numpy as np
+import os
 import math
-import sys
+import time
+import random
+import sqlite3
 import random
 from PIL import ImageTk, Image
-from numpy.core.numerictypes import obj2sctype
+from pieces import Piece
+from chessAI import ChessAI, RandomAI
 from data.misc.tkinter_custom_button import TkinterCustomButton
-import time
-import datetime
-import sqlite3
-import pandas as pd
+import sys
 
 class CHESSBOARD:
-    board, valid_moves_array = np.empty((9,9), dtype="<U10"), np.empty((9,9), dtype="<U10")
-    x1, y1 = -1, -1
+    x1, y1 = None, None
     br, bkn, bb, bq, bk, bp, wr, wkn, wb, wq, wk, wp = "", "", "", "", "", "", "", "", "", "", "", ""
-    color1, color2, color3, color4, color5 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c", "#9c1e37"
+    color1, color2, color3, color4, color5, color6 = "#706677", "#ccb7ae", "#eefaac", "#4bc96c", "#9c1e37", "#b9c288"
     rows, columns = 8, 8
     dim_square = 64
     top_offset, side_offset = 200, 400
     width = columns * dim_square + side_offset
     height = rows * dim_square + top_offset
-    dice_val = "5"
-    fake_roll_val, fake_roll_time_interval = 5, 1
-    turn = 0
-    selected_piece = ["", ""]
+    turns = -1 # -1 for white, 1 for black
+    corpsPlayed = [1,1,1] # 1 for able to be played, 2 for unable
+    locationLock = []
+    locationLockedIn = False
     white_kill, black_kill = 1, 1
+    whiteAI, BlackAI = False, False
     db_loc = './data/db/'
-    conn = ""
-    cursor = ""
-    table = ""
+    # note for heuristic
+    # have a variable called board weight which holds the sum of all piece weights on the board?
+    # may make heuristic calculations easier...
+    piecesBoard = np.empty((8, 8), dtype=Piece)
 
-    '''
-    # read excel file for capture info
-    capture_data = pd.read_excel("./CaptureMatrix.xlsx", header=None, names=["King", "Queen", "Knight", "Bishop", "Rook", "Pawn"])
-    capture_matrix = capture_data.to_numpy()
-    print(capture_matrix)
-    # print(capture_matrix[0][5])
-    # print(capture_matrix[0][2])
-    del capture_data
-    '''
 
     def __init__(self, parent):
         canvas_width = self.width
         canvas_height = self.height
         self.canvas = tk.Canvas(parent, width=canvas_width, height=canvas_height)
         self.canvas.pack(padx=8, pady=8)
+        self.add_piece_objects()
         self.draw_board()
         self.pieces()
         self.corps_rectangles()
-        self.history_box()
         self.init_dice()
+        self.history_box()
 
     def draw_board(self):
         intCheck = 0
@@ -66,6 +60,7 @@ class CHESSBOARD:
                                                 fill=self.checkerboard_color(intCheck),
                                                 tags="board")
                 intCheck += 1
+        #print("White horse 1----------------------\n", Piece.chessboard[7, 1].check_moves(self.piecesBoard))
 
     def checkerboard_color(self, intCheck):
         if intCheck % 2 == 0:
@@ -73,312 +68,375 @@ class CHESSBOARD:
         else:
             return self.color2
 
-    def pieces(self):
-        self.br = PhotoImage(file="./data/pieces/br.png")
-        lbr1, lbr2 = "11", "81"
-        self.add_piece(self.br, lbr1, "br1")
-        self.add_piece(self.br, lbr2, "br2")
+    def add_piece_objects(self):
+        Piece.gen_new_board()
 
-        self.bkn = PhotoImage(file="./data/pieces/bkn.png")
-        lbkn1, lbkn2 = "21", "71"
-        self.add_piece(self.bkn, lbkn1, "bkn1")
-        self.add_piece(self.bkn, lbkn2, "bkn2")
-
-        self.bb = PhotoImage(file="./data/pieces/bb.png")
-        lbb1, lbb2 = "31", "61"
-        self.add_piece(self.bb, lbb1, "bb1")
-        self.add_piece(self.bb, lbb2, "bb2")
-
-        self.bq = PhotoImage(file="./data/pieces/bq.png")
-        lbq = "41"
-        self.add_piece(self.bq, lbq, "bq")
-
-        self.bk = PhotoImage(file="./data/pieces/bk.png")
-        lbk = "51"
-        self.add_piece(self.bk, lbk, "bk")
-
-        
-        self.bp = PhotoImage(file="./data/pieces/bp.png")
-        lbp1, lbp2, lbp3, lbp4, lbp5, lbp6, lbp7, lbp8 = "12", "22", "32", "42", "52", "62", "72", "82"
-        self.add_piece(self.bp, lbp1, "bp1")
-        self.add_piece(self.bp, lbp2, "bp2")
-        self.add_piece(self.bp, lbp3, "bp3")
-        self.add_piece(self.bp, lbp4, "bp4")
-        self.add_piece(self.bp, lbp5, "bp5")
-        self.add_piece(self.bp, lbp6, "bp6")
-        self.add_piece(self.bp, lbp7, "bp7")
-        self.add_piece(self.bp, lbp8, "bp8")
-        
-        
-        self.wr = PhotoImage(file='./data/pieces/wr.png')
-        lwr1, lwr2 = "18", "88"
-        self.add_piece(self.wr, lwr1, "wr1")
-        self.add_piece(self.wr, lwr2, "wr2")
-
-        self.wkn = PhotoImage(file="./data/pieces/wkn.png")
-        lwkn1, lwkn2 = "28", "78"
-        self.add_piece(self.wkn, lwkn1, "wkn1")
-        self.add_piece(self.wkn, lwkn2, "wkn2")
-
-        self.wb = PhotoImage(file="./data/pieces/wb.png")
-        lwb1, lwb2 = "38", "68"
-        self.add_piece(self.wb, lwb1, "wb1")
-        self.add_piece(self.wb, lwb2, "wb2")
-
-        self.wq = PhotoImage(file="./data/pieces/wq.png")
-        lwq = "48"
-        self.add_piece(self.wq, lwq, "wq")
-
-        self.wk = PhotoImage(file="./data/pieces/wk.png")
-        lwk = "58"
-        self.add_piece(self.wk, lwk, "wk")
-
-        self.wp = PhotoImage(file="./data/pieces/wp.png")
-        lwp1, lwp2, lwp3, lwp4, lwp5, lwp6, lwp7, lwp8 = "17", "27", "37", "47", "57", "67", "77", "87"
-        self.add_piece(self.wp, lwp1, "wp1")
-        self.add_piece(self.wp, lwp2, "wp2")
-        self.add_piece(self.wp, lwp3, "wp3")
-        self.add_piece(self.wp, lwp4, "wp4")
-        self.add_piece(self.wp, lwp5, "wp5")
-        self.add_piece(self.wp, lwp6, "wp6")
-        self.add_piece(self.wp, lwp7, "wp7")
-        self.add_piece(self.wp, lwp8, "wp8")
-
-    def corps_rectangles(self):
-        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#a60314', tag = "corpsb1g")
-        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#a60314', tag = "corpsb2g") # black red
-        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#a60314', tag = "corpsb3g")
-        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#00a835', tag = "corpsb1r")
-        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#00a835', tag = "corpsb2r") # black green
-        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#00a835', tag = "corpsb3r")
-
-        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#a60314', tag = "corpsw1g")
-        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#a60314', tag = "corpsw2g") # white red
-        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#a60314', tag = "corpsw3g")
-        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#00a835', tag = "corpsw1r")
-        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#00a835', tag = "corpwb2r") # white green
-        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#00a835', tag = "corpwb3r")
-    
     def history_box(self):
         self.canvas.create_rectangle(525, 291, 913, 612, outline='black')
 
-    def roll_value(self):
-        self.dice_val = random.randrange(1,6)
-        return self.dice_val
+    def corps_rectangles(self):
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = self.color3, tag =      "corpsb1y")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = self.color3, tag =    "corpsb2y")             # black yellow
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = self.color3, tag =    "corpsb3y")
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#00a835', tag =        "corpsb1g")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#00a835', tag =      "corpsb2g")             # black green
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#00a835', tag =      "corpsb3g")
+        self.canvas.create_rectangle(2, 90, 190, 85, fill = '#a60314', tag =        "corpsb1r")
+        self.canvas.create_rectangle(195, 90, 320, 85, fill = '#a60314', tag =      "corpsb2r")             # black red
+        self.canvas.create_rectangle(325, 90, 510, 85, fill = '#a60314', tag =      "corpsb3r")
+        
 
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#a60314', tag =      "corpsw1r")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#a60314', tag =    "corpsw2r")             # white red
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#a60314', tag =    "corpsw3r")
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = self.color3, tag =    "corpsw1y")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = self.color3, tag =  "corpsw2y")             # white yellow
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = self.color3, tag =  "corpsw3y")
+        self.canvas.create_rectangle(2, 625, 190, 620, fill = '#00a835', tag =      "corpsw1g")
+        self.canvas.create_rectangle(195, 625, 320, 620, fill = '#00a835', tag =    "corpsw2g")             # white green
+        self.canvas.create_rectangle(325, 625, 510, 620, fill = '#00a835', tag =    "corpsw3g")
+        
+    def pieces(self):
+        self.br = PhotoImage(file="./data/pieces/br.png")
+        self.bh = PhotoImage(file="./data/pieces/bkn.png")
+        self.bb = PhotoImage(file="./data/pieces/bb.png")
+        self.bq = PhotoImage(file="./data/pieces/bq.png")
+        self.bk = PhotoImage(file="./data/pieces/bk.png")
+        self.bp = PhotoImage(file="./data/pieces/bp.png")
+        self.wr = PhotoImage(file="./data/pieces/wr.png")
+        self.wh = PhotoImage(file="./data/pieces/wkn.png")
+        self.wb = PhotoImage(file="./data/pieces/wb.png")
+        self.wq = PhotoImage(file="./data/pieces/wq.png")
+        self.wk = PhotoImage(file="./data/pieces/wk.png")
+        self.wp = PhotoImage(file="./data/pieces/wp.png")
+
+        self.add_piece(self.br, Piece.chessboard[0][0].location, "br1")
+        self.add_piece(self.br, Piece.chessboard[0][7].location, "br2")
+        self.add_piece(self.bh, Piece.chessboard[0][1].location, "bh1")
+        self.add_piece(self.bh, Piece.chessboard[0][6].location, "bh2")
+        self.add_piece(self.bb, Piece.chessboard[0][2].location, "bb1")
+        self.add_piece(self.bb, Piece.chessboard[0][5].location, "bb2")
+        self.add_piece(self.bq, Piece.chessboard[0][3].location, "bq1")
+        self.add_piece(self.bk, Piece.chessboard[0][4].location, "bk1")
+
+        self.add_piece(self.bp, Piece.chessboard[1][0].location, "bp1")
+        self.add_piece(self.bp, Piece.chessboard[1][1].location, "bp2")
+        self.add_piece(self.bp, Piece.chessboard[1][2].location, "bp3")
+        self.add_piece(self.bp, Piece.chessboard[1][3].location, "bp4")
+        self.add_piece(self.bp, Piece.chessboard[1][4].location, "bp5")
+        self.add_piece(self.bp, Piece.chessboard[1][5].location, "bp6")
+        self.add_piece(self.bp, Piece.chessboard[1][6].location, "bp7")
+        self.add_piece(self.bp, Piece.chessboard[1][7].location, "bp8")
+
+        self.add_piece(self.wr, Piece.chessboard[7][0].location, "wr1")
+        self.add_piece(self.wr, Piece.chessboard[7][7].location, "wr2")
+        self.add_piece(self.wh, Piece.chessboard[7][1].location, "wh1")
+        self.add_piece(self.wh, Piece.chessboard[7][6].location, "wh2")
+        self.add_piece(self.wb, Piece.chessboard[7][2].location, "wb1")
+        self.add_piece(self.wb, Piece.chessboard[7][5].location, "wb2")
+        self.add_piece(self.wq, Piece.chessboard[7][3].location, "wq1")
+        self.add_piece(self.wk, Piece.chessboard[7][4].location, "wk1")
+
+        self.add_piece(self.wp, Piece.chessboard[6][0].location, "wp1")
+        self.add_piece(self.wp, Piece.chessboard[6][1].location, "wp2")
+        self.add_piece(self.wp, Piece.chessboard[6][2].location, "wp3")
+        self.add_piece(self.wp, Piece.chessboard[6][3].location, "wp4")
+        self.add_piece(self.wp, Piece.chessboard[6][4].location, "wp5")
+        self.add_piece(self.wp, Piece.chessboard[6][5].location, "wp6")
+        self.add_piece(self.wp, Piece.chessboard[6][6].location, "wp7")
+        self.add_piece(self.wp, Piece.chessboard[6][7].location, "wp8")
+        
     def init_dice(self):
         # beginning image
-        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.canvas.create_image(self.width - 192, self.height / 5.4, image=self.dice1 , tag="dice")
-        
-    '''
-    def show_dice(self):
-        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((64, 64), Image.ANTIALIAS))
-        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((64, 64), Image.ANTIALIAS))
-        # using threading library to display images with delay like a randomized dice roll?
-        # lets try time sleep instead
+        self.dice1 = ImageTk.PhotoImage(Image.open("data/die/dice1.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice2 = ImageTk.PhotoImage(Image.open("data/die/dice2.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice3 = ImageTk.PhotoImage(Image.open("data/die/dice3.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice4 = ImageTk.PhotoImage(Image.open("data/die/dice4.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice5 = ImageTk.PhotoImage(Image.open("data/die/dice5.png").resize((80, 80), Image.ANTIALIAS))
+        self.dice6 = ImageTk.PhotoImage(Image.open("data/die/dice6.png").resize((80, 80), Image.ANTIALIAS))
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice2 , tag="dice2")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice3 , tag="dice3")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice4 , tag="dice4")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice5 , tag="dice5")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice6 , tag="dice6")
+        self.canvas.create_image(self.width - 350, self.height / 5, image=self.dice1 , tag="dice1")
 
-        for roll in range(0, self.fake_roll_val):
-            self.roll_value()
-            if self.dice_val == 1: 
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice1 , tag="dice")
-            elif self.dice_val == 2:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice2 , tag="dice")
-            elif self.dice_val == 3:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice3 , tag="dice")
-            elif self.dice_val == 4:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice4 , tag="dice")               
-            elif self.dice_val == 5:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice5 , tag="dice")
-            elif self.dice_val == 6:
-                self.canvas.create_image(self.width - 50, self.height / 2, image=self.dice6 , tag="dice")
-        print("dice_val after show_dice:", self.dice_val)
-    '''
-
-    def rule_set(self, spiece):
-        if(spiece[0][:-1] == "bp"):
-            if(int(spiece[0][2]) <= 3):
-                return [1, spiece[0][0], spiece[0][1], 1] #distance can travel, team, piece, corps
-            if(int(spiece[0][2]) == 4 or int(spiece[0][2]) == 5):
-                return [1, spiece[0][0], spiece[0][1], 2]
-            if(int(spiece[0][2]) >= 6):
-                return [1, spiece[0][0], spiece[0][1], 3]
-
-        if(spiece[0][:-1] == "wp"):
-            if(int(spiece[0][2]) <= 3):
-                return [1, spiece[0][0], spiece[0][1], 1]
-            if(int(spiece[0][2]) == 4 or int(spiece[0][2]) == 5):
-                return [1, spiece[0][0], spiece[0][1], 2]
-            if(int(spiece[0][2]) >= 6):
-                return [1, spiece[0][0], spiece[0][1], 3]
-
-        if(spiece[0][:-1] == "br"):
-            return [2, spiece[0][0], spiece[0][1], 2]
-
-
-        if(spiece[0][:-1] == "wr"):
-            return [2, spiece[0][0], spiece[0][1], 2]
-
-
-        if(spiece[0][:-1] == "bkn"):
-            if(int(spiece[0][3]) == 1):
-                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 1]
-            if(int(spiece[0][3]) == 2):
-                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 3]
-
-        if(spiece[0][:-1] == "wkn"):
-            if(int(spiece[0][3]) == 1):
-                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 1]
-            if(int(spiece[0][3]) == 2):
-                return [4, spiece[0][0], str(spiece[0][1]) + str(spiece[0][2]), 3]
-
-        if(spiece[0][:-1] == "bb"):
-            if(int(spiece[0][2]) == 1):
-                return [2, spiece[0][0], spiece[0][1], 1]
-            if(int(spiece[0][2]) == 2):
-                return [2, spiece[0][0], spiece[0][1], 3]
-
-        if(spiece[0][:-1] == "wb"):
-            if(int(spiece[0][2]) == 1):
-                return [2, spiece[0][0], spiece[0][1], 1]
-            if(int(spiece[0][2]) == 2):
-                return [2, spiece[0][0], spiece[0][1], 3]
-
-        if(spiece[0] == "bq"):
-            return [3, spiece[0][0], spiece[0][1], 2]
-
-        if(spiece[0] == "wq"):
-            return [3, spiece[0][0], spiece[0][1], 2]
-
-        if(spiece[0] == "bk"):
-            return [3, spiece[0][0], spiece[0][1], 2]
-
-        if(spiece[0] == "wk"):
-            return [3, spiece[0][0], spiece[0][1], 2]
-
-    def highlight_green(self, x, y, color):
-        self.canvas.create_rectangle(((x - 1) * 64) +4, ((y) * 64) + 37, 
-            ((x - 1) * 64) + self.dim_square, (y * 64) + self.dim_square + 35, 
-            fill = color, tag = "move_locations")
-        self.canvas.tag_lower("move_locations")
-        self.canvas.tag_lower("board")
-
-    def valid_moves(self, dist):
-
-        nw, n, ne, e, se, s, sw, w = [1, -1, -1], [1, 0, 1], [1, 1, -1], [1, 1, 0], [1, 1, 1], [1, 0, -1], [1, -1, 1], [1, -1, 0]
-        #spiece = [self.board[self.x1][self.y1], str(self.x1) + str(self.y1)]
-        #team = dist[1]
-        #spiece = ""
-        self.valid_moves_arrayF(nw, dist)
-        self.valid_moves_arrayF(n, dist)
-        self.valid_moves_arrayF(ne, dist)
-        self.valid_moves_arrayF(e, dist)
-        self.valid_moves_arrayF(se, dist)
-        self.valid_moves_arrayF(s, dist)
-        self.valid_moves_arrayF(sw, dist)
-        self.valid_moves_arrayF(w, dist)
-
-    def valid_moves_arrayF(self, cr, dist):
-        team = dist[1]
-        spiece = ""
-        try:
-            for x in range(1, dist[0] + 1):
-                if (cr[0] == 1):
-                    spiece = [self.board[self.x1 - (x * cr[1])][self.y1 - (x * cr[2])], str(self.x1 - (x * cr[1])) + str(self.y1 - (x * cr[2]))]
-                    if(int(spiece[1][0]) > 0 and int(spiece[1][0]) < 9):
-                        if(int(spiece[1][1]) > 0 and int(spiece[1][1]) < 9):
-                            if(spiece[0] != ""):
-                                if(spiece[0][0] == team):
-                                    cr[0] == 0
-                                    self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 0
-                                    break
-                                if(spiece[0][0] != team and spiece[0][0] != ""):
-                                    cr[0] == 0
-                                    self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 2
-                                    self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color5)
-                                    break
-                            if(spiece[0] == ""):
-                                self.valid_moves_array[self.x1 - (x*cr[1])][self.y1 - (x*cr[2])] = 1
-                                self.highlight_green(int(spiece[1][0]), int(spiece[1][1]), self.color4)
-        except:
-            return
-
-    '''
-    def can_capture(self, attacker, defender):
-        capture = FALSE
-        
-        # based on current die roll
-        # access capture_matrix at [attacker][defender]
-        # check for dice_val in [attacker][defender]
-        # if true, set capture true
-        interaction = str(self.capture_matrix[attacker][defender])
-        if(str(self.dice_val) in interaction):
-            capture = TRUE
-        # print("dice_val:", self.dice_val)
-        # print(capture)
-        return capture
-
-    def capture(self, attacker, defender):
-        self.show_dice()
-        result = self.can_capture(attacker, defender)
-        if(result):
-            print(attacker, "successfully captured", defender, "with a roll of:", self.dice_val)
-            # next turn/phase
-            return 
-        else:
-            print(attacker, "did not capture", defender, "with a roll of:", self.dice_val)
-            # next turn/phase
-            return
-    '''
-
-    def ret_piece_name(self, x): # method for returning piece name without number, ie wb1 returns wb, bk returns bk
-        if(x[-1:].isnumeric()):
-            return x[:-1]
-        else:
-            return x
+    def rand_dice(self):
+        return random.randrange(1,6)
 
     def add_piece(self, img, location, piece): # places an image of a certain piece on the canvas
         self.canvas.delete("piece_selected")
         self.canvas.delete("move_locations")
-        posx = int(location[0])
-        posy = int(location[1])
-        self.board[posx][posy] = piece
+        posx = int(location[1])
+        posy = int(location[0])
         offset_x = 32
         offset_y = 132
-        self.canvas.create_image(offset_x * ((posx*2)-1), offset_y + (self.dim_square * (posy-1)), 
-            image=img, anchor="center", tag=piece)
-        
-    def del_piece(self, old_piece):
-        # del_piece is invoked twice if an attacking move, once if a valid move
-        # on an attacking move, the second conditional is invoked first to delete the attacked piece's image and then recreate it in the graveyard
-        # and then a second time on the first conditional to delete the image of the piece being moved 
-        # and then clear it's former location from the 'board' logic array that shows all pieces names
-        # on a non-attacking move it only hits the first conditional
-        if(old_piece[0].isnumeric() != True): 
-            x, y = int(old_piece[1][0]), int(old_piece[1][1]) # select the coordinates of the piece that is being moved
-            self.canvas.delete(old_piece[0]) # delete the picture of the piece from the previous slot
-            self.board[x][y] = "" # clear the piece's former location from the logic array 'board' that shows all pieces names
-        else: 
-            self.canvas.delete(self.board[int(old_piece[0])][int(old_piece[1])])
-            print(self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
-            img = eval("self." + self.ret_piece_name(self.board[int(old_piece[0])][int(old_piece[1])]))
-            if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "b"):
-                self.canvas.create_image(32 * (self.black_kill) - 15, 675, 
-                    image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
-                self.black_kill += 1.6
-            if(self.board[int(old_piece[0])][int(old_piece[1])][0] == "w"):
-                self.canvas.create_image(32 * (self.white_kill) - 15, 50, 
-                        image=img, anchor="center", tag=self.board[int(old_piece[0])][int(old_piece[1])][0] + "graveyard")
-                self.white_kill += 1.6
+        self.canvas.create_image(offset_x * (((posx+1)*2)-1), offset_y + (self.dim_square * ((posy+1)-1)), 
+            image=img, anchor="center", tag=piece)     
 
-    def coord_convert(self, x): # converts the integer based arry method used in this program to A-H horizontally and 8-1 vertically
-        y = str(chr(int(x[0])+64))
-        z = str(abs(int(x[1]) - 9))
-        return y + z
+    def piece_select(self, locationLock, chessboard):
+        if Piece.chessboard[locationLock[0]][locationLock[1]].active == False: return
+        yLoc = locationLock[0]
+        xLoc = locationLock[1]
+        Piece.check_moves(Piece.chessboard[yLoc][xLoc])
+        availMoves = Piece.chessboard[yLoc][xLoc].availMoves
+        availAttacks = Piece.chessboard[yLoc][xLoc].availAttacks
+        self.moves_and_attacks_highlight(availMoves, chessboard, self.color4)
+        self.moves_and_attacks_highlight(availAttacks, chessboard, self.color5)
+
+    '''
+    function
+        rng 1-3
+
+        if blackAI = True
+            if black corps 1 is active
+                ai = RandomAI()
+                ...
+            if black corps 2 is active
+                ai = RandomAI()
+                ...
+            if black corps 3 is active
+                time.sleep(3)
+                ai = RandomAI() # returns piece id, array of 2
+                ai.set_alive_pieces()
+                ai.set_legal_moves()
+                moveInfo = ai.move(randomCorps)
+                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+                piece_move(pieceHeld, moveInfo[1]) # moveInfo[1] is a tuple
+                delete ai
+    '''
+
+    def ai_function(self):
+        print("Invoked")
+        corpsOrder = []
+        if self.BlackAI == False and self.whiteAI == False:
+            return
+
+        if self.BlackAI == True:
+            c1Active = False
+            c2Active = False
+            c3Active = False
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j] and Piece.chessboard[i][j].team == 1:
+                        if Piece.chessboard[i][j].corps == 1 and Piece.chessboard[i][j].active == True: c1Active = True
+                        if Piece.chessboard[i][j].corps == 2 and Piece.chessboard[i][j].active == True: c2Active = True
+                        if Piece.chessboard[i][j].corps == 3 and Piece.chessboard[i][j].active == True: c3Active = True
+            ai = RandomAI(1) # returns piece id, array of 2
+            while True:
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                randomCorps = random.randint(1, 3)
+                if randomCorps not in corpsOrder:
+                    corpsOrder.append(randomCorps)
+                if len(corpsOrder) == 3:
+                    break
+            for i in range(3):
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                #try:
+                    #piece = self.return_corps(i+1, -1)
+                time.sleep(0.5)
+                ai.set_alive_pieces()
+                ai.set_legal_moves()
+                moveInfo = ai.move(corpsOrder[i])
+                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+                if corpsOrder[i] == 1 and c1Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
+                elif corpsOrder[i] == 2 and c2Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                elif corpsOrder[i] == 3 and c3Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                #except:
+                #    print("black shit's broke")
+            corpsOrder = []
+            del ai
+        
+        if self.whiteAI == True:
+            c1Active = False
+            c2Active = False
+            c3Active = False
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j] and Piece.chessboard[i][j].team == -1:
+                        if Piece.chessboard[i][j].corps == 1 and Piece.chessboard[i][j].active == True: c1Active = True
+                        if Piece.chessboard[i][j].corps == 2 and Piece.chessboard[i][j].active == True: c2Active = True
+                        if Piece.chessboard[i][j].corps == 3 and Piece.chessboard[i][j].active == True: c3Active = True
+            ai = RandomAI(-1) # returns piece id, array of 2
+            while True:
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                randomCorps = random.randint(1, 3)
+                if randomCorps not in corpsOrder:
+                    corpsOrder.append(randomCorps)
+                if len(corpsOrder) == 3:
+                    break
+            for i in range(3):
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                #try:
+                    #piece = self.return_corps(i+1, -1)
+                time.sleep(0.5)
+                ai.set_alive_pieces()
+                ai.set_legal_moves()
+                moveInfo = ai.move(corpsOrder[i])
+                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+                if corpsOrder[i] == 1 and c1Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
+                elif corpsOrder[i] == 2 and c2Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                elif corpsOrder[i] == 3 and c3Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                #except:
+                #    print("white shit's broke")
+            corpsOrder = []
+            del ai
+
+    # moveToCoords is a tuple
+    def piece_move(self, moveToCoords, heldPiece):
+        print("Move to coords: ", moveToCoords)
+        print("Held piece: ", heldPiece)
+        print("Held piece avail moves", heldPiece.availMoves)
+        moveCheck = False
+        attackCheck = False
+        if tuple(moveToCoords) in heldPiece.availMoves: moveCheck = True
+        if tuple(moveToCoords) in heldPiece.availAttacks: attackCheck = True
+        
+        print("moveCheck = ", moveCheck)
+        print("attackCheck = ", attackCheck)
+
+        Piece.diceVal = self.rand_dice()
+
+        if (tuple(moveToCoords) not in heldPiece.availMoves and 
+        tuple(moveToCoords) not in heldPiece.availAttacks):
+            print("AAAAAAAAAAAAAAAAAAA")
+            return
+
+        self.turn_forward(heldPiece)
+        print("BBBBBBBBBBBB")
+
+        if attackCheck == False and moveCheck: # moves with no attacks
+            img = eval("self." # TODO: send to new method
+                + heldPiece.pieceID[:-1])
+            self.canvas.delete(heldPiece.pieceID)
+            self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
+            heldPiece.move(moveToCoords[0], moveToCoords[1])
+        if moveCheck and attackCheck: # moves with attacks
+            self.canvas.tag_raise("dice" + str(Piece.diceVal))
+            b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
+            if b:
+                img = eval("self." # TODO: send to new method
+                    + heldPiece.pieceID[:-1])
+                gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
+                self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
+                self.canvas.delete(heldPiece.pieceID)
+
+                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+                self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
+                heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
+        if moveCheck == False and attackCheck: #rook attack from afar
+            b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
+            if b:
+                gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
+                self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
+                self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
+                #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
+                heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
+        #print(Piece.chessboard)
+
+        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j]:
+                        Piece.chessboard[i][j].active = False
+            print("Game over")
+            ### TODO On Game Over, have a popup that lets the user know who won, and gives 2 buttons to click to restart or view history
+            self.game_over_popup()
+            self.canvas.tag_raise("corpsw1r")
+            self.canvas.tag_raise("corpsw2r")
+            self.canvas.tag_raise("corpsw3r")
+            self.canvas.tag_raise("corpsb1r")
+            self.canvas.tag_raise("corpsb2r")
+            self.canvas.tag_raise("corpsb3r")
+
+        
+        self.locationLockedIn = False
+
+    def game_over_popup(self):
+        win = Tk()
+        win.geometry("375x100")
+        win.title("")
+        if ("wk1" in Piece.graveyard):
+            Label(win, text= "Game over, black wins!", font=('Helvetica 18 bold')).place(x=20,y=20)
+        if("bk1" in Piece.graveyard):
+            Label(win, text= "Game over, white wins!", font=('Helvetica 18 bold')).place(x=20,y=20)
+
+    def graveyard(self, img, piece):
+        if piece.team == -1:
+            self.canvas.create_image(32 * (self.white_kill) - 15, 50, 
+                image=img, anchor="center")
+            self.white_kill += 1.6
+        if piece.team == 1:
+            self.canvas.create_image(32 * (self.black_kill) - 15, 675, 
+                image=img, anchor="center")
+            self.black_kill += 1.6  
+        
+    def moves_and_attacks_highlight(self, array, chessboard, color):
+        arrayToParse = len(array)
+        for i in range(arrayToParse):
+            x = array[i][0]
+            y = array[i][1]
+            highlight("move_locations", chessboard, x, y, color)
+
+    def turn_forward(self, pieceObject):
+
+        teamLetter = "z"
+
+        if pieceObject.team == -1: teamLetter = "w"
+        if pieceObject.team == 1: teamLetter = "b"
+
+        corpsIndicatorTag = "corps" + teamLetter + str(pieceObject.corps) + "g"
+        
+        if pieceObject.corps == 1:
+            self.change_active_status(pieceObject.team, pieceObject.corps, False)
+            self.corpsPlayed[0] = 2
+        if pieceObject.corps == 2:
+            self.change_active_status(pieceObject.team, pieceObject.corps, False)
+            self.corpsPlayed[1] = 2
+        if pieceObject.corps == 3:
+            self.change_active_status(pieceObject.team, pieceObject.corps, False)
+            self.corpsPlayed[2] = 2
+
+        self.canvas.lower(corpsIndicatorTag)
+
+        if (self.corpsPlayed[0]==2 and self.corpsPlayed[1]==2 and self.corpsPlayed[2]==2):
+            self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
+            self.reset_corps_inidcator(pieceObject.team * -1)
+
+    def change_active_status(self, team, corps, reset):
+        for i in range(8):
+            for j in range(8):
+                if Piece.chessboard[i][j]:
+                    if Piece.chessboard[i][j].team == team:
+                        if reset:
+                            Piece.chessboard[i][j].active = True
+                            self.corpsPlayed = [1, 1, 1]
+                        elif Piece.chessboard[i][j].corps == corps:
+                            Piece.chessboard[i][j].active = False
+
+    def clear_corps_indicator_highlight(self):
+        self.canvas.lower("corpsw1y")
+        self.canvas.lower("corpsw2y")
+        self.canvas.lower("corpsw3y")
+        self.canvas.lower("corpsb1y")
+        self.canvas.lower("corpsb2y")
+        self.canvas.lower("corpsb3y")
+
+    def reset_corps_inidcator(self, team):
+        if team == -1:
+            self.canvas.tag_raise("corpsw1g")
+            self.canvas.tag_raise("corpsw2g")
+            self.canvas.tag_raise("corpsw3g")
+        if team == 1:
+            self.canvas.tag_raise("corpsb1g")
+            self.canvas.tag_raise("corpsb2g")
+            self.canvas.tag_raise("corpsb3g")
 
     def rules_window(self):
         
@@ -393,88 +451,175 @@ class CHESSBOARD:
         Label(top, image=rule1).grid(row=0, column=0)
         Label(top, image=rule2).grid(row=0, column=1)
 
+def highlight(htag, chessboard, yBoard, xBoard, color):
+    chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
+        ((xBoard) * 64) + chessboard.dim_square, ((yBoard + 1) * 64) + chessboard.dim_square + 35, 
+        fill = color, tag = htag)
 
+    chessboard.canvas.tag_raise(htag)
+    chessboard.canvas.lower("piece_selected")
+    chessboard.canvas.lower("move_locations")
+    chessboard.canvas.lower("board")
+
+def highlight_corps(chessboard, yBoard, xBoard):
+    #print(yBoard, xBoard)
+    
+    for i in range(8):
+        for j in range(8):
+            if Piece.chessboard[i][j] and Piece.chessboard[i][j].active:
+                team, sTeam = Piece.chessboard[i][j].team, Piece.chessboard[yBoard][xBoard].team
+                corps, sCorps = Piece.chessboard[i][j].corps, Piece.chessboard[yBoard][xBoard].corps
+                if (Piece.chessboard[i][j].corps == Piece.chessboard[yBoard][xBoard].corps and
+                Piece.chessboard[i][j].team == Piece.chessboard[yBoard][xBoard].team):
+                    highlight("corpsHlight", chessboard, i, j, chessboard.color6)
+                    chessboard.canvas.lower("corpsHlight")
+                    if team == -1:
+                        if corps == 1: chessboard.canvas.tag_raise("corpsw1y")
+                        if corps == 2: chessboard.canvas.tag_raise("corpsw2y")
+                        if corps == 3: chessboard.canvas.tag_raise("corpsw3y")
+                    if team == 1:
+                        if corps == 1: chessboard.canvas.tag_raise("corpsb1y")
+                        if corps == 2: chessboard.canvas.tag_raise("corpsb2y")
+                        if corps == 3: chessboard.canvas.tag_raise("corpsb3y")
+    
 def on_click(event, chessboard):
-
-    chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db') #DB set up
-    chessboard.cursor = chessboard.conn.cursor()
-    chessboard.table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECE, PFROM, PTO, DEVCOORDS, PKILL, DICEROLL, KILLORNO);"""
-    chessboard.cursor.execute(chessboard.table)
-
-    # If the location clicked has a value of 1 or 2 on the valid_moves_array array (1 being free space, 2 being attack option)
-    if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(1) or chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
-        if(chessboard.valid_moves_array[chessboard.x1][chessboard.y1] == str(2)):
-            chessboard.del_piece(str(chessboard.x1) + str(chessboard.y1)) # invokes del_piece method for removing the attacked piece visually and recreating it in the graveyard
-        proper_loc_from = chessboard.coord_convert(chessboard.selected_piece[1]) # convert 'from' tile to Letter Number format
-        proper_loc_to = chessboard.coord_convert(str(chessboard.x1) + str(chessboard.y1)) # 'to' tile to Letter Number format
-        chessboard.cursor.execute("INSERT INTO HISTORY VALUES (?, ?, ?, ?, ?, ?, ?)", # insert data into db
-                                (chessboard.selected_piece[0], proper_loc_from, proper_loc_to, str(chessboard.x1) + str(chessboard.y1), 
-                                    chessboard.board[chessboard.x1][chessboard.y1], "", ""))
-        chessboard.conn.commit()
-        chessboard.conn.close()
-        img = eval("chessboard." + chessboard.ret_piece_name(chessboard.selected_piece[0])) 
-        chessboard.del_piece(chessboard.selected_piece) # removes piece from it's former location visually and clears it's location from the 'board' array
-        chessboard.add_piece(img, str(chessboard.x1) + str(chessboard.y1), chessboard.selected_piece[0]) # recreates the piece visually in the new location
-        chessboard.valid_moves_array = np.empty((9,9), dtype="<U10") # clears the array of valid moves
-        print(np.rot90(np.fliplr(chessboard.board)))
+    chessboard.canvas.delete("move_locations")
+    chessboard.canvas.delete("piece_selected")
+    try:
+        yLoc = chessboard.y1 -1
+        xLoc = chessboard.x1 -1
+        if xLoc == -101:
+            chessboard.locationLockedIn = False
+            return
+    except:
         return
-
-    # portion of on_click selecting pieces rather than moving them
-    chessboard.conn.close()
-    chessboard.valid_moves_array = np.empty((9,9), dtype="<U10") # clears the array of valid moves
-    chessboard.canvas.delete("piece_selected") # deletes the yellow highlight
-    chessboard.canvas.delete("move_locations") # deletes the green highlight
-    chessboard.selected_piece = ["", ""]
-    x, y = event.x - 2, event.y - 100 # adjusts the x and y clicks within the board itself
-    if x > 0 and x <= 512 and y > 0 and y <= 512: # check if the click is within the board
-        if(chessboard.board[chessboard.x1][chessboard.y1] != ""): # if the tile selected has a piece create a yellow rectangle around the tile highlighting it
-            chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
-                ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
-                fill = chessboard.color3, tag = "piece_selected")
-            chessboard.selected_piece = [chessboard.board[chessboard.x1][chessboard.y1], str(chessboard.x1) + str(chessboard.y1)] # piece name and location, ie wp7, 27
-            dist = chessboard.rule_set(chessboard.selected_piece) # gather distance can move, team, piece name and corps
-            #print("dist:" , dist)
-            chessboard.valid_moves(dist) # updates the valid_moves_array which shows what tiles the piece that's selected can move to
-        piece = chessboard.board[chessboard.x1][chessboard.y1]
-        chessboard.canvas.tag_raise(piece) # makes sure the piece isn't overlapped by highlighted tiles visually
-        #print(np.rot90(np.fliplr(chessboard.board)))
-    #print("chessboard.selected_piece:" , chessboard.selected_piece)
-    print("", np.rot90(np.fliplr(chessboard.valid_moves_array)))
-
-#def on_right_click(event, chessboard):
-    #piece = chessboard.board[chessboard.x1][chessboard.y1]
-    #chessboard.canvas.delete(piece)
-    #chessboard.board[chessboard.x1][chessboard.y1] = ""
+    if Piece.chessboard[yLoc][xLoc] and chessboard.locationLockedIn == False and Piece.chessboard[yLoc][xLoc].active == True:
+        highlight("piece_selected", chessboard, yLoc, xLoc, chessboard.color3)
+        chessboard.locationLockedIn = True
+        chessboard.locationLock = [yLoc, xLoc]
+        chessboard.piece_select(Piece.chessboard[yLoc][xLoc].location, chessboard)
+        # chessboard.canvas.delete("copsHlight")      # typo?
+        return
+    if chessboard.locationLockedIn:
+        # chessboard.piece_move([yLoc, xLoc])
+        chessboard.piece_move([yLoc, xLoc], Piece.chessboard[chessboard.locationLock[0]][chessboard.locationLock[1]])
+        chessboard.locationLock = [None]
+        chessboard.locationLockedIn = False
 
 def motion(event, chessboard): # creates a unique yellow tile over the currently highlighted tile
     x, y = event.x - 2, event.y - 100
     over = math.ceil(x/64)+64 
     down = abs(math.ceil(y/64) - 9)
     overChar = chr(over)
+
     chessboard.canvas.delete("hlight")
-    piece = chessboard.board[chessboard.x1][chessboard.y1]
-    if x > 0 and x <= 512 and y > 0 and y <= 512:
+    chessboard.canvas.delete("corpsHlight")
+    chessboard.clear_corps_indicator_highlight()
+    if x > 0 and x < 512 and y > 0 and y < 512 and not btnState:
         chessboard.loc = str(overChar) + str(down)
-        CHESSBOARD.x1 = over-64
-        CHESSBOARD.y1 = abs(down-9)
-        chessboard.canvas.create_rectangle(((chessboard.x1 - 1) * 64) +4, ((chessboard.y1) * 64) + 37, 
-            ((chessboard.x1 - 1) * 64) + chessboard.dim_square, (chessboard.y1 * 64) + chessboard.dim_square + 35, 
-            fill = chessboard.color3, tag = "hlight")
-        chessboard.canvas.tag_raise("move_locations")
-        chessboard.canvas.tag_raise(piece)
-        chessboard.canvas.lower("move_locations")
+        chessboard.x1 = over-64
+        chessboard.y1 = abs(down-9)
+        yBoard = chessboard.y1 - 1
+        xBoard = chessboard.x1 - 1
+        piece = Piece.chessboard[yBoard][xBoard]
+        highlight("hlight", chessboard, yBoard, xBoard, chessboard.color3)
+        #chessboard.canvas.tag_raise("move_locations")
+        if Piece.chessboard[yBoard][xBoard]:
+            chessboard.canvas.delete("corpsHlight")
+            #chessboard.canvas.tag_raise(piece)
+            highlight_corps(chessboard, yBoard, xBoard)            
+            chessboard.canvas.tag_raise(piece)
+        else:
+            chessboard.canvas.delete("corpsHlight")
+            chessboard.canvas.lower("move_locations")
+        #chessboard.canvas.lower("corpsHlight")
+        #chessboard.canvas.lower("move_locations")
+        
         chessboard.canvas.lower("board")
+    else:
+        x, y = -1, -1
+        chessboard.x1, chessboard.y1 = -100, -100
+
+# TODO: restart game, 
+# create a function outside of CHESSBOARD that gets called in game_over_popup
+# this function deletes the old board, generates a new board, and displays it
+# without extending the canvas
 
 def main():
-    root = tk.Tk()
-    root.title('Fuzzy-Logic Medieval Chess')
-    chessboard = CHESSBOARD(root)
-    icon = PhotoImage(file="./data/misc/mainIcon.png")
-    root.iconphoto(False, icon)
-    root.resizable(False, False)
-    chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db')
-    chessboard.cursor = chessboard.conn.cursor()
-    rules_button = TkinterCustomButton(text="Rules", 
+    window = Tk()
+    window.geometry("1200x634+400+0")
+    window.title("Fuzzy-Logic Medieval Chess")
+
+    img = PhotoImage(file="./data/Image/checkmate.gif")
+    label = Label(window, image=img)
+    window.resizable(False, False)
+    label.place(x=0, y=0, relwidth=1, relheight=1)
+
+    def restart():
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+    def load():
+        pass
+
+    def save():
+        pass
+
+    def credit():
+        pass
+
+    def start():
+        window.destroy()
+        root = Tk()
+        root.title('Fuzzy-Logic Medieval Chess')
+        chessboard = CHESSBOARD(root)
+        icon = PhotoImage(file="./data/misc/mainIcon.png")
+        root.iconphoto(False, icon)
+        root.resizable(False, False)
+        chessboard.conn = sqlite3.connect(chessboard.db_loc + 'history.db')
+        chessboard.cursor = chessboard.conn.cursor()
+        try:
+            chessboard.cursor.execute('DROP TABLE HISTORY;')
+            chessboard.conn.commit
+        except:
+            print("No table")
+        root.bind("<Motion>", lambda event: motion(event, chessboard))
+        root.bind("<Button-1>", lambda event: on_click(event, chessboard))
+
+        def white_ai():
+            '''
+            if chessboard.whiteAI == False:
+                white_ai_button.set_text("White AI: On")
+                chessboard.whiteAI = True
+                chessboard.ai_function()
+            elif chessboard.whiteAI == True:
+                white_ai_button.set_text("White AI: Off") 
+                chessboard.whiteAI = False
+            '''
+            
+            if chessboard.whiteAI == False:
+                chessboard.whiteAI = True
+                chessboard.ai_function()
+                chessboard.whiteAI = False
+            
+        
+
+
+        def black_ai():
+            '''
+            if chessboard.BlackAI == False:
+                black_ai_button.set_text("Black AI: On")
+                chessboard.BlackAI = True
+                chessboard.ai_function()
+            elif chessboard.BlackAI == True:
+                black_ai_button.set_text("Black AI: Off")
+                chessboard.BlackAI = False
+            '''
+            if chessboard.BlackAI == False:
+                chessboard.BlackAI = True
+                chessboard.ai_function()
+                chessboard.BlackAI = False
+
+        rules_button = TkinterCustomButton(text="Rules", 
                                             bg_color=None,
                                             fg_color="#58636F",
                                             border_color=None,
@@ -484,7 +629,7 @@ def main():
                                             width= chessboard.width/2.32,
                                             hover=True,
                                             command=chessboard.rules_window)
-    history_button = TkinterCustomButton(text="History", 
+        history_button = TkinterCustomButton(text="History", 
                                             bg_color=None,
                                             fg_color="#58636F",
                                             border_color=None,
@@ -493,32 +638,110 @@ def main():
                                             border_width=0,
                                             width= chessboard.width/2.32,
                                             hover=True)
-    rules_button.place(relx=0.57, rely=0.26)
-    history_button.place(relx=0.57, rely=0.33)
-    try:
-        chessboard.cursor.execute('DROP TABLE HISTORY;')
-        chessboard.conn.commit
-    except:
-            print("No table")
-    chessboard.conn.close
-    root.bind("<Motion>", lambda event: motion(event, chessboard))
-    root.bind("<Button-1>", lambda event: on_click(event, chessboard))
-    #root.bind('<Button-3>', lambda event: on_right_click(event, chessboard))
+        black_ai_button = TkinterCustomButton(text="Black AI", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/3,
+                                            hover=True,
+                                            command=black_ai)
+        white_ai_button = TkinterCustomButton(text="White AI", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/3,
+                                            hover=True,
+                                            command=white_ai)
+        rules_button.place(relx=0.568, rely=0.26)
+        history_button.place(relx=0.568, rely=0.32)
+        black_ai_button.place(relx=0.663, rely= 0.135)
+        white_ai_button.place(relx=0.663, rely= 0.195)
+        
+        #root.mainloop()
+        navIcon = PhotoImage(file="./data/Image/menu.png")
+        closeIcon = PhotoImage(file="./data/Image/close.png")
+        global btnState
+        btnState = False
+            # setting switch function:
+        def switch():
+                global btnState
+                if btnState:
+                    # create animated Navbar closing:
+                    #for x in range(301):
+                    navRoot.place(x=-301, y=0)
+                    # topFrame.update()
 
-    '''
-    # frame = Frame(root)
-    # frame.pack()
-    # btRoll = Button(frame, text="Roll", command=chessboard.show_dice())
-    # btRoll.pack(side = RIGHT)
-    print("King attacks pawn, Should be 1:")
-    chessboard.capture(0, 5)
-    print("Pawn attacks queen")
-    chessboard.capture(5, 1)
-    print("Bishop attacks Rook:")
-    chessboard.capture(3, 4)
-    '''
+                    # resetting widget colors:
+                    homeLabel.config(bg="#58636F")
+                    topFrame.config(bg="#58636F")
+                    root.config(bg="gray17")
 
-    root.mainloop()
+                    # turning button OFF:
+                    btnState = False
+                else:
+                    # make root dim:
+                    homeLabel.config(bg="#58636F")
+                    topFrame.config(bg="#58636F")
+                    root.config(bg="#58636F")
+
+                    # created animated Navbar opening:
+                  #  for x in range(-300, 0):
+                    navRoot.place(x=0, y=0)
+                      #  topFrame.update()
+
+                    # turing button ON:
+                    btnState = True
+
+            # top Navigation bar:
+        topFrame = tk.Frame(root, bg="#58636F")
+        topFrame.pack(side="top", fill=tk.X)
+
+            # Header label text:
+        homeLabel = tk.Label(topFrame, text="Fuzzy-Logic Medieval Chess", font="Bahnschrift 15", bg="#58636F", fg="white", height=2, padx=20)
+        homeLabel.pack(side="right")
+       
+            # Navbar button:
+        navbarBtn = tk.Button(topFrame, image=navIcon, bg="#58636F", activebackground="#58636F", bd=0, padx=20, command=switch)
+        navbarBtn.place(x=10, y=10)
+
+            # setting Navbar frame
+        navRoot = tk.Frame(root, bg="gray17", height=1000, width=300)
+        navRoot.place(x=-300, y=0)
+        tk.Label(navRoot, font="Bahnschrift 15", bg="#58636F", fg="black", height=2, width=300, padx=20).place(x=0, y=0)
+
+            # set y-coordinate of Navbar widgets:
+        y = 80
+  
+        tk.Button(navRoot, text="Restart", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0, command=restart).place(x=25, y=y)
+        tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command =save).place(x=25, y=115) 
+        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=load).place(x=25, y=150)
+        tk.Button(navRoot, text="About", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=credit).place(x=25, y=185)
+        tk.Button(navRoot, text="Exit", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=root.quit).place(x=25, y=220)
+       
+        y += 40 
+
+            # Navbar Close Button:
+        closeBtn = tk.Button(navRoot, image=closeIcon, bg="#58636F", activebackground="#58636F", bd=0, command=switch)
+        closeBtn.place(x=250, y=10)   
+                             
+        root.mainloop()
+
+    endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
+    endSplash.place(x=500, y=295)
+
+    endSplash1 = Button(window, text="LOAD GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15,command=load, borderwidth=2)
+    endSplash1.place(x=500, y=375)
+
+    endSplash2 = Button(window, text="EXIT", background ="#58636F", fg ="#33B5E5", height = 3,width=15,borderwidth=2, command=window.quit)
+    endSplash2.place(x=500, y=455)
+
+    window.mainloop()
 
 if __name__ == "__main__":
     main()
