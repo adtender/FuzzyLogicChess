@@ -1,6 +1,7 @@
 import random
 from pieces import Piece 
 import time
+import math
 
 class ChessAI:
 
@@ -35,13 +36,96 @@ class ChessAI:
         
         return allMoves
 
+    #TODO: Add attacked pieces in consideration for heuristic. Maybe a thing for Hard AI
     def set_attacked_pieces(self):
         return
+    
+    # returns score of move 
+    def eval_move(self, piece, move):
+        score = 0
+        
+        pieceName = Piece.find_piece(piece[0])
+        
+        # distance from enemy king (the closer the better)
+        oppKingDist = self.dist_from_enemy_king(move)
+        if(oppKingDist <= 3):
+            score += 7
+        elif(oppKingDist <= 5):
+            score += 4
+            
+        # If its an attack, add corresponding values to score
+        # 4 tiers:
+        # If success likely (if 5+ numbers in capturematrix): +5
+        # If slightly likely: (if 3-4 numbers in capture matrix): +3
+        # If unlikely: (2 numbers in capturematrix): +2
+        # If almost impossible: (1 number): +1
+        if(move in pieceName.availAttacks):
+            
+            defender = Piece.chessboard[move[0]][move[1]]
+            attackIndex = Piece.pieceData.index(pieceName.pieceType)
+            defenderIndex = Piece.pieceData.index(defender.pieceType)
+            captureInfo = Piece.captureMatrix[attackIndex][defenderIndex]
+            if(len(captureInfo) >= 5):
+                score += 5
+            elif(len(captureInfo) >= 3):
+                score += 3
+            elif(len(captureInfo) == 2):
+                score += 2
+            elif(len(captureInfo) < 2):
+                score += 1
+       
+
+            
+        return score
+    
+    # returns array of tuples (pieceID, move [row, col], score)
+    def score_pieces(self):
+        
+        allMoves = self.legalMoves
+        piecesWithMoves = []
+    
+        scores = []
+        
+        # loop through active pieces, score
+        for piece in allMoves:
+            if len(piece[1]) > 0:
+                piecesWithMoves.append(piece)
+                
+        print("\nPieces with moves: ", piecesWithMoves)
+        
+        for piece2 in piecesWithMoves:
+            for move in piece2[1]:
+                scores.append((piece2[0], move, self.eval_move(piece2, move)))
+        
+        
+        print("\nScores: ", scores)
+        return scores
+    
+    # takes in move coords (row, col)
+    # returns distance from king in cartesian coordinates
+    def dist_from_enemy_king(self, move):
+        dist = 0
+        
+        if(self.team == 1):
+            kingLoc = [Piece.find_piece("wk1").location[0], Piece.find_piece("wk1").location[1]]
+        if(self.team == -1):
+            kingLoc = [Piece.find_piece("bk1").location[0], Piece.find_piece("bk1").location[1]]
+            
+        dist = abs(math.dist(move, kingLoc))
+        # print("Distance from king: ", dist)
+        
+        return dist
+    
+    
     
     def move(self):
         # call move on the piece that has the highest heuristic value
         # should this include corps? 
             # like should it account for all 3 moves separately, or will that be a main.py function?
+            
+        # TODO: Iterate through scores array, keep best move for each corps and move that piece. 
+        #       If a corps commander is dead, (this shouldnt be an issue when we get corps transfers implemented), then nothing moves for that corps.
+        #       bestMoveCorps1, bestMoveCorps2. bestMoveCorps3 = ~~~~~, ~~~~~, ~~~~~
         print("move")
 
     ## make random move function if heuristic is tied?
@@ -109,6 +193,13 @@ class RandomAI(ChessAI):
 
 ### driver code ###
 Piece.gen_new_board()
+
+print(Piece.chessboard)
+
+aiTest = ChessAI(1)
+
+aiTest.score_pieces()
+
 
 '''
 i = -1
