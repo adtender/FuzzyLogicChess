@@ -176,7 +176,7 @@ class Piece:
     def remove_deuplicates(self, lst):
         return [t for t in (set(tuple(i) for i in lst))]
 
-    # takes board and moveLoc tuple (row, col)
+    # takes moveLoc tuple (row, col)
     def move(self, newRow, newCol):
         # function that moves the piece
         # returns a new board
@@ -264,10 +264,10 @@ class Piece:
 
         return None
 
-
+    # TODO: Remove this?
     def eval_moves(self):
         # evaluates moves based on a heuristic
-        # put wesley function here
+        
 
         return 
 

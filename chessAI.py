@@ -59,7 +59,13 @@ class ChessAI:
         # If slightly likely: (if 3-4 numbers in capture matrix): +3
         # If unlikely: (2 numbers in capturematrix): +2
         # If almost impossible: (1 number): +1
+        
+        # TODO: If attack is on the king, do it automatically? or conditionally... if piece is likely to capture 
+            # also bishops
         if(move in pieceName.availAttacks):
+            
+            # score bonus for being an attack
+            score += 3
             
             defender = Piece.chessboard[move[0]][move[1]]
             attackIndex = Piece.pieceData.index(pieceName.pieceType)
@@ -73,8 +79,12 @@ class ChessAI:
                 score += 2
             elif(len(captureInfo) < 2):
                 score += 1
+                
+            if(defender.pieceType == 'k'):
+                score += 20
+            if(defender.pieceType == 'b'):
+                score += 15
        
-
             
         return score
     
@@ -200,6 +210,41 @@ aiTest = ChessAI(1)
 
 aiTest.score_pieces()
 
+def test_move(pieceID, row, col):
+    piece = Piece.find_piece(pieceID)
+    
+    piece.move(row, col)
+    Piece.check_all_moves()
+    
+    print("------------After test_move-------------\n", Piece.chessboard)
+    
+    return Piece.chessboard
+
+# use this to test without GUI?
+def test_move2(pieceID, row, col):
+    piece = Piece.find_piece(pieceID)
+    
+    if([row, col] in piece.availAttacks):
+        defender = Piece.chessboard[row][col]
+        piece.capture(defender, 1, 0)
+    elif([row, col] in piece.availMoves):
+        piece.move(row, col)
+    else:
+        print("test_move did nothing")
+        
+    Piece.check_all_moves()
+    
+    print("------------After test_move-------------\n", Piece.chessboard)
+    
+    return Piece.chessboard
+
+# move pieces
+# test_move("wp4", 5, 3)
+test_move("bp5", 4, 4)
+
+aiTest.score_pieces()
+
+# show board
 
 '''
 i = -1
