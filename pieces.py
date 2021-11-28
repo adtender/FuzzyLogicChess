@@ -181,9 +181,6 @@ class Piece:
         # function that moves the piece
         # returns a new board
         newBoard = Piece.chessboard
-        # print("New Board: ", newBoard)
-
-
 
         if((newRow, newCol) in self.availMoves):
             # clear current space
@@ -193,7 +190,6 @@ class Piece:
             
             newBoard[newRow][newCol] = self
         
-
         return newBoard
 
     # takes in defender, if dice val is given (should update board or not), and if the attack is a ranged rook attack

@@ -127,8 +127,8 @@ class ChessAI:
         return dist
     
     
-    
-    def move(self):
+    # takes in corps to move. Probably easier to track active corps this way in main.py
+    def move(self, corps):
         # call move on the piece that has the highest heuristic value
         # should this include corps? 
             # like should it account for all 3 moves separately, or will that be a main.py function?
@@ -136,7 +136,37 @@ class ChessAI:
         # TODO: Iterate through scores array, keep best move for each corps and move that piece. 
         #       If a corps commander is dead, (this shouldnt be an issue when we get corps transfers implemented), then nothing moves for that corps.
         #       bestMoveCorps1, bestMoveCorps2. bestMoveCorps3 = ~~~~~, ~~~~~, ~~~~~
-        print("move")
+        
+        moves = self.score_pieces()
+        
+        bestMoveScore = -1
+        tiedScores = []
+        
+        for move in moves:
+            piece = Piece.find_piece(move[0])
+            
+            if piece.corps == corps:
+                # corpsMoves.append(move)
+                
+                # check if score is higher than current best and set if true
+                if move[2] > bestMoveScore:
+                    bestMoveScore = move[2]
+                    bestMove = move
+                elif move[2] == bestMoveScore:
+                    tiedScores.append(move)
+                    
+        # if tied scores has moves in it, pick a random move
+        if len(tiedScores) > 0:
+            bestMove = tiedScores[random.randint(0, len(tiedScores))]
+            
+        # bestMoveScore = max(corpsMoves, key=lambda item: item[2])
+        # bestMove = corpsMoves.index(bestMoveScore, key=lambda item: item[2])
+        # I thought this would be good solution^^^ but problems with index function. Will calculate max manually
+        
+        # test
+        print("bestMove: ", bestMove, "\nbestMoveScore: ", bestMoveScore)
+        
+        return bestMove
 
     ## make random move function if heuristic is tied?
 
@@ -240,9 +270,11 @@ def test_move2(pieceID, row, col):
 
 # move pieces
 # test_move("wp4", 5, 3)
-test_move("bp5", 4, 4)
+test_move("bp5", 5, 4)
 
-aiTest.score_pieces()
+# aiTest.score_pieces()
+
+aiTest.move(1)
 
 # show board
 
