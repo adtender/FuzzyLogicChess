@@ -150,14 +150,16 @@ class ChessAI:
                 
                 # check if score is higher than current best and set if true
                 if move[2] > bestMoveScore:
+                    tiedScores = []         #clear tied scores array
                     bestMoveScore = move[2]
                     bestMove = move
+                    tiedScores.append(move)
                 elif move[2] == bestMoveScore:
                     tiedScores.append(move)
                     
         # if tied scores has moves in it, pick a random move
-        if len(tiedScores) > 0:
-            bestMove = tiedScores[random.randint(0, len(tiedScores))]
+        if len(tiedScores) > 1:
+            bestMove = tiedScores[random.randint(0, len(tiedScores)-1)]
             
         # bestMoveScore = max(corpsMoves, key=lambda item: item[2])
         # bestMove = corpsMoves.index(bestMoveScore, key=lambda item: item[2])
@@ -242,8 +244,17 @@ aiTest.score_pieces()
 
 def test_move(pieceID, row, col):
     piece = Piece.find_piece(pieceID)
+    print(piece)
     
     piece.move(row, col)
+    
+    newBoard = Piece.chessboard
+
+        
+    # clear current space
+    Piece.chessboard[piece.location[0]][piece.location[1]] = None
+    piece.location = [row, col]
+    Piece.chessboard[row][col] = piece
     Piece.check_all_moves()
     
     print("------------After test_move-------------\n", Piece.chessboard)
@@ -269,8 +280,9 @@ def test_move2(pieceID, row, col):
     return Piece.chessboard
 
 # move pieces
-# test_move("wp4", 5, 3)
+# test_move("wp4", 2, 3)
 test_move("bp5", 5, 4)
+Piece.chessboard
 
 # aiTest.score_pieces()
 
