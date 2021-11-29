@@ -514,10 +514,18 @@ class CHESSBOARD:
     
     def transfer_action(self, corpsToMoveTo, locLockX, locLockY, top):
         self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                        (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID, str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps), None, None, None, None, None, str(corpsToMoveTo), None, None, None))
+                        (Piece.chessboard[locLockX][locLockY].pieceID, str(Piece.chessboard[locLockX][locLockY].corps), None, None, None, None, None, str(corpsToMoveTo), None, None, None))
         self.conn.commit()
         self.turn_forward(Piece.chessboard[locLockX][locLockY])
         Piece.chessboard[locLockX][locLockY].corps = corpsToMoveTo
+        
+        for i in range(len(Piece.chessboard)):
+                for j in range(len(Piece.chessboard[0])):
+                    if Piece.chessboard[i][j] and Piece.chessboard[i][j].team == Piece.chessboard[locLockX][locLockY].team:
+                        if Piece.chessboard[i][j].corps == Piece.chessboard[locLockX][locLockY].corps and Piece.chessboard[i][j].pieceID != Piece.chessboard[locLockX][locLockY].pieceID:
+                            if Piece.chessboard[i][j].active:
+                                Piece.chessboard[locLockX][locLockY].active = True
+                                break
         top.destroy()
         return
     
