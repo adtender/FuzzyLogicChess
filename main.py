@@ -29,6 +29,8 @@ class CHESSBOARD:
     white_kill, black_kill = 1, 1
     whiteAI, BlackAI = False, False
     db_loc = './data/db/'
+    cursor = ""
+    conn = ""
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
@@ -308,7 +310,7 @@ class CHESSBOARD:
             print("AAAAAAAAAAAAAAAAAAA")
             return
 
-        self.turn_forward(heldPiece)
+        #self.turn_forward(heldPiece)
         print("BBBBBBBBBBBB")
 
         if attackCheck == False and moveCheck: # moves with no attacks
@@ -317,8 +319,12 @@ class CHESSBOARD:
             self.canvas.delete(heldPiece.pieceID)
             self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
             heldPiece.move(moveToCoords[0], moveToCoords[1])
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                    (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(False), None, None, None, None, str(False), None))
+            self.conn.commit()
         if moveCheck and attackCheck: # moves with attacks
             self.canvas.tag_raise("dice" + str(Piece.diceVal))
+            pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
             if b:
                 img = eval("self." # TODO: send to new method
@@ -330,15 +336,24 @@ class CHESSBOARD:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None))
+            self.conn.commit()
+            
         if moveCheck == False and attackCheck: #rook attack from afar
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
+            pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
             if b:
                 gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
                 self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(self.locationLock), str(True), Piece.diceVal, pieceAttackedID, None, None, str(True), None))
+            self.conn.commit()
         #print(Piece.chessboard)
+        self.turn_forward(heldPiece)
         
         self.bishop_death("wb1")
         self.bishop_death("wb2")
@@ -472,6 +487,9 @@ class CHESSBOARD:
         if "bb2" in Piece.graveyard:
             self.canvas.delete("corpsb3g")
             self.canvas.tag_raise("corpsw3r")
+        self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (None, None, None, None, None, None, None, None, None, None, str(True)))
+        self.conn.commit()
 
     def rules_window(self):
         
@@ -488,10 +506,16 @@ class CHESSBOARD:
         
     def pass_turn(self):
         if(self.locationLockedIn):
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                    (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID, str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps), None, None, None, None, None, None, str(True), None, None))
+            self.conn.commit()
             self.turn_forward(Piece.chessboard[self.locationLock[0]][self.locationLock[1]])
         return
     
     def transfer_action(self, corpsToMoveTo, locLockX, locLockY, top):
+        self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                        (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID, str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps), None, None, None, None, None, str(corpsToMoveTo), None, None, None))
+        self.conn.commit()
         self.turn_forward(Piece.chessboard[locLockX][locLockY])
         Piece.chessboard[locLockX][locLockY].corps = corpsToMoveTo
         top.destroy()
@@ -666,6 +690,8 @@ def main():
             chessboard.conn.commit
         except:
             print("No table")
+        table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECEID, CORPS, PIECEFROM, PIECETO, ATTACKORNO, DICE, ATTACKEDPIECE, TRANSFERTO, PASS, ROOKEXCEPTION, NEXTTURN);"""
+        chessboard.cursor.execute(table)
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
