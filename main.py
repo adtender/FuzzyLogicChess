@@ -339,6 +339,11 @@ class CHESSBOARD:
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
         #print(Piece.chessboard)
+        
+        self.bishop_death("wb1")
+        self.bishop_death("wb2")
+        self.bishop_death("bb1")
+        self.bishop_death("bb2")
 
         if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
             for i in range(8):
@@ -357,6 +362,19 @@ class CHESSBOARD:
 
         
         self.locationLockedIn = False
+
+    def bishop_death(self, piece):
+        x, y = 0, 0
+        if piece[0] == "w": x = -1
+        if piece[0] == "b": x = 1
+        if piece[2] == "1": y = 1
+        if piece[2] == "2": y = 3
+        if (piece in Piece.graveyard):
+            for i in range(len(Piece.chessboard)):
+                for j in range(len(Piece.chessboard[0])):
+                    if Piece.chessboard[i][j] and Piece.chessboard[i][j].team == x and Piece.chessboard[i][j].corps == y:
+                        Piece.chessboard[i][j].corps = 2
+        
 
     def game_over_popup(self):
         win = Tk()
@@ -402,6 +420,11 @@ class CHESSBOARD:
         if pieceObject.corps == 3:
             self.change_active_status(pieceObject.team, pieceObject.corps, False)
             self.corpsPlayed[2] = 2
+            
+        if teamLetter + "b1" in Piece.graveyard:
+            self.corpsPlayed[0] = 2
+        if teamLetter + "b2" in Piece.graveyard:
+            self.corpsPlayed[2] = 2
 
         self.canvas.lower(corpsIndicatorTag)
 
@@ -437,6 +460,18 @@ class CHESSBOARD:
             self.canvas.tag_raise("corpsb1g")
             self.canvas.tag_raise("corpsb2g")
             self.canvas.tag_raise("corpsb3g")
+        if "wb1" in Piece.graveyard:
+            self.canvas.delete("corpsw1g")
+            self.canvas.tag_raise("corpsw1r")
+        if "wb2" in Piece.graveyard:
+            self.canvas.delete("corpsw3g")
+            self.canvas.tag_raise("corpsw3r")
+        if "bb1" in Piece.graveyard:
+            self.canvas.delete("corpsb1g")
+            self.canvas.tag_raise("corpsw1r")
+        if "bb2" in Piece.graveyard:
+            self.canvas.delete("corpsb3g")
+            self.canvas.tag_raise("corpsw3r")
 
     def rules_window(self):
         
@@ -450,6 +485,55 @@ class CHESSBOARD:
         #Label(top, image=rule2).pack()
         Label(top, image=rule1).grid(row=0, column=0)
         Label(top, image=rule2).grid(row=0, column=1)
+        
+    def pass_turn(self):
+        if(self.locationLockedIn):
+            self.turn_forward(Piece.chessboard[self.locationLock[0]][self.locationLock[1]])
+        return
+    
+    def transfer_action(self, corpsToMoveTo, locLockX, locLockY, top):
+        self.turn_forward(Piece.chessboard[locLockX][locLockY])
+        Piece.chessboard[locLockX][locLockY].corps = corpsToMoveTo
+        top.destroy()
+        return
+    
+    def transfer(self):
+        k, l = 0, 0
+        kBool, lBool = False, False
+        coreList = [1, 2, 3]
+        if(self.locationLockedIn):
+            coreList.remove(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps)
+            print(coreList)
+            top = Toplevel()
+            top.geometry("325x50")
+            top.title('Transfer from corps ' + str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps))
+            for i in range(len(Piece.chessboard)):
+                for j in range(len(Piece.chessboard[0])):
+                    if Piece.chessboard[i][j]:
+                        if (Piece.chessboard[i][j].corps == coreList[0] and
+                            Piece.chessboard[i][j].team == Piece.chessboard[self.locationLock[0]][self.locationLock[1]].team):
+                            k+=1
+                            if k >= 6:
+                                kBool = True
+                        if (Piece.chessboard[i][j].corps == coreList[1] and
+                            Piece.chessboard[i][j].team == Piece.chessboard[self.locationLock[0]][self.locationLock[1]].team):
+                            l+=1
+                            if l >= 6:
+                                lBool = True
+            if not kBool:
+                if (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[0] + "b1" not in Piece.graveyard):
+                    tk.Button(top,text="Transfer to corps " + str(coreList[0]), width = 22, 
+                            command=lambda: self.transfer_action(coreList[0], self.locationLock[0], self.locationLock[1], top)).pack(side=LEFT)
+            if not lBool:
+                if (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID[0] + "b2" not in Piece.graveyard):
+                    tk.Button(top,text="Transfer to corps " + str(coreList[1]), width = 22, 
+                            command=lambda: self.transfer_action(coreList[1], self.locationLock[0], self.locationLock[1], top)).pack(side=RIGHT)
+            if Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps == 1:
+                tk.Button(top,text="Transfer to corps " + str(coreList[0]), width = 22, 
+                          command=lambda: self.transfer_action(coreList[0], self.locationLock[0], self.locationLock[1], top)).pack(side=LEFT)
+            if Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps == 3:
+                tk.Button(top,text="Transfer to corps " + str(coreList[1]), width = 22, 
+                          command=lambda: self.transfer_action(coreList[1], self.locationLock[0], self.locationLock[1], top)).pack(side=RIGHT)
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
@@ -626,7 +710,7 @@ def main():
                                             hover_color="#808B96",
                                             corner_radius=10,
                                             border_width=0,
-                                            width= chessboard.width/2.32,
+                                            width= chessboard.width/4.64,
                                             hover=True,
                                             command=chessboard.rules_window)
         history_button = TkinterCustomButton(text="History", 
@@ -636,8 +720,28 @@ def main():
                                             hover_color="#808B96",
                                             corner_radius=10,
                                             border_width=0,
-                                            width= chessboard.width/2.32,
+                                            width= chessboard.width/4.64,
                                             hover=True)
+        pass_button = TkinterCustomButton(text="Pass Turn", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/4.75,
+                                            hover=True,
+                                            command=chessboard.pass_turn)
+        transfer_button = TkinterCustomButton(text="Transfer", 
+                                            bg_color=None,
+                                            fg_color="#58636F",
+                                            border_color=None,
+                                            hover_color="#808B96",
+                                            corner_radius=10,
+                                            border_width=0,
+                                            width= chessboard.width/4.75,
+                                            hover=True,
+                                            command=chessboard.transfer)
         black_ai_button = TkinterCustomButton(text="Black AI", 
                                             bg_color=None,
                                             fg_color="#58636F",
@@ -660,6 +764,8 @@ def main():
                                             command=white_ai)
         rules_button.place(relx=0.568, rely=0.26)
         history_button.place(relx=0.568, rely=0.32)
+        transfer_button.place(relx=0.782, rely=0.26)
+        pass_button.place(relx=0.782, rely=0.32)
         black_ai_button.place(relx=0.663, rely= 0.135)
         white_ai_button.place(relx=0.663, rely= 0.195)
         
