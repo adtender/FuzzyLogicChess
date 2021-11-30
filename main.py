@@ -7,6 +7,7 @@ import time
 import random
 import sqlite3
 import random
+import threading
 from PIL import ImageTk, Image
 from pieces import Piece
 from chessAI import ChessAI, RandomAI
@@ -320,26 +321,8 @@ class CHESSBOARD:
                     corpsOrder.append(randomCorps)
                 if len(corpsOrder) == 3:
                     break
-            for i in range(3):
-                if (c1Active == False and c2Active == False and c3Active == False): break
-                #try:
-                    #piece = self.return_corps(i+1, -1)
-                time.sleep(1)
-                ai.set_alive_pieces()
-                ai.set_legal_moves()
-                moveInfo = ai.move(corpsOrder[i])
-                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
-                if corpsOrder[i] == 1 and c1Active == True:
-                    self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
-                    # time.sleep(1)
-                elif corpsOrder[i] == 2 and c2Active == True:
-                    self.piece_move(list(moveInfo[1]), pieceHeld)
-                    # time.sleep(1)
-                elif corpsOrder[i] == 3 and c3Active == True:
-                    self.piece_move(list(moveInfo[1]), pieceHeld)
-                    # time.sleep(1)
-                #except:
-                #    print("black shit's broke")
+            i = 0
+            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
             corpsOrder = []
             del ai
         
@@ -364,25 +347,30 @@ class CHESSBOARD:
                     corpsOrder.append(randomCorps)
                 if len(corpsOrder) == 3:
                     break
-            for i in range(3):
-                if (c1Active == False and c2Active == False and c3Active == False): break
-                #try:
-                    #piece = self.return_corps(i+1, -1)
-                time.sleep(1)
-                ai.set_alive_pieces()
-                ai.set_legal_moves()
-                moveInfo = ai.move(corpsOrder[i])
-                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
-                if corpsOrder[i] == 1 and c1Active == True:
-                    self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
-                elif corpsOrder[i] == 2 and c2Active == True:
-                    self.piece_move(list(moveInfo[1]), pieceHeld)
-                elif corpsOrder[i] == 3 and c3Active == True:
-                    self.piece_move(list(moveInfo[1]), pieceHeld)
-                #except:
-                #    print("white shit's broke")
+            print("hello")
+            i = 0
+            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
             corpsOrder = []
-            del ai
+            del ai   
+         
+    def ai_custom(self, ai, corpsOrder, i, c1Active, c2Active, c3Active):
+        if i >= 3: return
+        print("AAAAAAAAAAAAAAfdafdafsdafadsAAAAAAAAAAA", corpsOrder)
+        ai.set_alive_pieces()
+        ai.set_legal_moves()
+        moveInfo = ai.move(corpsOrder[i])
+        pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+        if corpsOrder[i] == 1 and c1Active == True:
+            self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
+        elif corpsOrder[i] == 2 and c2Active == True:
+            self.piece_move(list(moveInfo[1]), pieceHeld)
+        elif corpsOrder[i] == 3 and c3Active == True:
+            self.piece_move(list(moveInfo[1]), pieceHeld)
+        i += 1
+        if i < 3:
+            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+        return
+    
             
     ###### constant AI function (toggle instead of 1 run on click) ######
     def constantAI(self):
@@ -545,7 +533,7 @@ class CHESSBOARD:
         if (self.corpsPlayed[0]==2 and self.corpsPlayed[1]==2 and self.corpsPlayed[2]==2):
             self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
             self.reset_corps_inidcator(pieceObject.team * -1)
-            self.ai_function_continuous()
+            #self.ai_function_continuous()
          
         self.history_box_text()
         
