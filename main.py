@@ -552,6 +552,11 @@ class CHESSBOARD:
             #self.ai_function_continuous()
          
         self.history_box_text()
+        i = 0
+        self.canvas.after(0, self.dice_roll_animation, i, pieceObject.team * -1)
+        
+    def turn_change_animation(self, i, team):
+        return
         
     def history_box_text(self):
         self.canvas.delete("HistoryText")
