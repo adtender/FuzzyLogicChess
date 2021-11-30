@@ -101,10 +101,17 @@ class ChessAI:
             elif(len(captureInfo) < 2):
                 score += 1
                 
+            # priority for attacking commanders    
             if(defender.pieceType == 'k'):
                 score += 20
             if(defender.pieceType == 'b'):
                 score += 15
+            
+            # prio for attacking strong piece
+            if(defender.pieceType == 'q'):
+                score += 8
+            if(defender.pieceType == 'h'):
+                score += 8
                
                
         # increase score if piece is attacked
@@ -163,6 +170,7 @@ class ChessAI:
     
     
     # takes in corps to move. Probably easier to track active corps this way in main.py
+    # returns highest score move for the entered corps (pieceID, move coords, score)
     def move(self, corps):
         # call move on the piece that has the highest heuristic value
             
@@ -207,10 +215,9 @@ class ChessAI:
         
         return bestMove
 
-    ## make random move function if heuristic is tied?
 
 
-# randomAI inherits ChessAI
+########## randomAI inherits ChessAI ##########
 class RandomAI(ChessAI):
 
     def __init__(self, team) -> None:
