@@ -238,17 +238,20 @@ class CHESSBOARD:
                 if (c1Active == False and c2Active == False and c3Active == False): break
                 #try:
                     #piece = self.return_corps(i+1, -1)
-                time.sleep(0.5)
+                # time.sleep(.5)
                 ai.set_alive_pieces()
                 ai.set_legal_moves()
                 moveInfo = ai.move(corpsOrder[i])
                 pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
                 if corpsOrder[i] == 1 and c1Active == True:
                     self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
+                    time.sleep(2)
                 elif corpsOrder[i] == 2 and c2Active == True:
                     self.piece_move(list(moveInfo[1]), pieceHeld)
+                    time.sleep(2)
                 elif corpsOrder[i] == 3 and c3Active == True:
                     self.piece_move(list(moveInfo[1]), pieceHeld)
+                    time.sleep(2)
                 #except:
                 #    print("black shit's broke")
             corpsOrder = []
@@ -277,6 +280,95 @@ class CHESSBOARD:
                 #try:
                     #piece = self.return_corps(i+1, -1)
                 time.sleep(0.5)
+                ai.set_alive_pieces()
+                ai.set_legal_moves()
+                moveInfo = ai.move(corpsOrder[i])
+                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+                if corpsOrder[i] == 1 and c1Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
+                elif corpsOrder[i] == 2 and c2Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                elif corpsOrder[i] == 3 and c3Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                #except:
+                #    print("white shit's broke")
+            corpsOrder = []
+            del ai
+            
+    def ai_function_continuous(self):
+        print("AI Function 2 Invoked")
+        corpsOrder = []
+        if self.BlackAI == False and self.whiteAI == False:
+            return
+
+        if self.BlackAI == True:
+            c1Active = False
+            c2Active = False
+            c3Active = False
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j] and Piece.chessboard[i][j].team == 1:
+                        if Piece.chessboard[i][j].corps == 1 and Piece.chessboard[i][j].active == True: c1Active = True
+                        if Piece.chessboard[i][j].corps == 2 and Piece.chessboard[i][j].active == True: c2Active = True
+                        if Piece.chessboard[i][j].corps == 3 and Piece.chessboard[i][j].active == True: c3Active = True
+            ai = ChessAI(1) # returns piece id, array of 2
+            # generate random order for corps to move in
+            while True:
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                randomCorps = random.randint(1, 3)
+                if randomCorps not in corpsOrder:
+                    corpsOrder.append(randomCorps)
+                if len(corpsOrder) == 3:
+                    break
+            for i in range(3):
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                #try:
+                    #piece = self.return_corps(i+1, -1)
+                time.sleep(1)
+                ai.set_alive_pieces()
+                ai.set_legal_moves()
+                moveInfo = ai.move(corpsOrder[i])
+                pieceHeld = Piece.find_piece(moveInfo[0]) #pieceHeld is an object
+                if corpsOrder[i] == 1 and c1Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld) # moveInfo[1] is a tuple
+                    # time.sleep(1)
+                elif corpsOrder[i] == 2 and c2Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                    # time.sleep(1)
+                elif corpsOrder[i] == 3 and c3Active == True:
+                    self.piece_move(list(moveInfo[1]), pieceHeld)
+                    # time.sleep(1)
+                #except:
+                #    print("black shit's broke")
+            corpsOrder = []
+            del ai
+        
+        if self.whiteAI == True:
+            c1Active = False
+            c2Active = False
+            c3Active = False
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j] and Piece.chessboard[i][j].team == -1:
+                        if Piece.chessboard[i][j].corps == 1 and Piece.chessboard[i][j].active == True: 
+                            c1Active = True
+                        if Piece.chessboard[i][j].corps == 2 and Piece.chessboard[i][j].active == True: 
+                            c2Active = True
+                        if Piece.chessboard[i][j].corps == 3 and Piece.chessboard[i][j].active == True: 
+                            c3Active = True
+            ai = ChessAI(-1) # returns piece id, array of 2
+            while True:
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                randomCorps = random.randint(1, 3)
+                if randomCorps not in corpsOrder:
+                    corpsOrder.append(randomCorps)
+                if len(corpsOrder) == 3:
+                    break
+            for i in range(3):
+                if (c1Active == False and c2Active == False and c3Active == False): break
+                #try:
+                    #piece = self.return_corps(i+1, -1)
+                time.sleep(1)
                 ai.set_alive_pieces()
                 ai.set_legal_moves()
                 moveInfo = ai.move(corpsOrder[i])
@@ -453,6 +545,7 @@ class CHESSBOARD:
         if (self.corpsPlayed[0]==2 and self.corpsPlayed[1]==2 and self.corpsPlayed[2]==2):
             self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
             self.reset_corps_inidcator(pieceObject.team * -1)
+            self.ai_function_continuous()
          
         self.history_box_text()
         
@@ -771,6 +864,8 @@ def main():
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
+
+        # assistive
         def white_ai():
             '''
             if chessboard.whiteAI == False:
@@ -787,6 +882,7 @@ def main():
                 chessboard.ai_function()
                 chessboard.whiteAI = False
             
+        # assistive
         def black_ai():
             '''
             if chessboard.BlackAI == False:
@@ -801,6 +897,29 @@ def main():
                 chessboard.BlackAI = True
                 chessboard.ai_function()
                 chessboard.BlackAI = False
+                
+        # constant (toggle)
+        def toggle_white_ai():        
+            if chessboard.whiteAI == False:
+                white_ai_button.set_text("White AI: On")
+                chessboard.whiteAI = True
+                chessboard.ai_function_continuous()
+            elif chessboard.whiteAI == True:
+                white_ai_button.set_text("White AI: Off")
+                chessboard.whiteAI = False
+            
+        
+
+        # constant (toggle)
+        def toggle_black_ai():
+            if chessboard.BlackAI == False:
+                black_ai_button.set_text("Black AI: On")
+                chessboard.BlackAI = True
+                chessboard.ai_function_continuous()
+            elif chessboard.BlackAI == True:
+                black_ai_button.set_text("Black AI: Off")
+                chessboard.BlackAI = False
+                
 
         rules_button = TkinterCustomButton(text="Rules", 
                                             bg_color=None,
@@ -842,7 +961,7 @@ def main():
                                             width= chessboard.width/4.75,
                                             hover=True,
                                             command=chessboard.transfer)
-        black_ai_button = TkinterCustomButton(text="Black AI", 
+        black_ai_button = TkinterCustomButton(text="Black AI: Off", 
                                             bg_color=None,
                                             fg_color="#58636F",
                                             border_color=None,
@@ -851,8 +970,8 @@ def main():
                                             border_width=0,
                                             width= chessboard.width/3,
                                             hover=True,
-                                            command=black_ai)
-        white_ai_button = TkinterCustomButton(text="White AI", 
+                                            command=toggle_black_ai)
+        white_ai_button = TkinterCustomButton(text="White AI: Off", 
                                             bg_color=None,
                                             fg_color="#58636F",
                                             border_color=None,
@@ -861,7 +980,7 @@ def main():
                                             border_width=0,
                                             width= chessboard.width/3,
                                             hover=True,
-                                            command=white_ai)
+                                            command=toggle_white_ai)
         rules_button.place(relx=0.568, rely=0.26)
         history_button.place(relx=0.568, rely=0.32)
         transfer_button.place(relx=0.782, rely=0.26)
