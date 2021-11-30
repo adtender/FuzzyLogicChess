@@ -446,6 +446,38 @@ class CHESSBOARD:
         if (self.corpsPlayed[0]==2 and self.corpsPlayed[1]==2 and self.corpsPlayed[2]==2):
             self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
             self.reset_corps_inidcator(pieceObject.team * -1)
+         
+        self.history_box_text()
+        
+    def history_box_text(self):
+        self.canvas.delete("HistoryText")
+        for i in range (1, 11):
+            try:
+                lastEntry = self.cursor.execute('select * from HISTORY').fetchall()[-1 * i]
+                displayText = ""
+                if lastEntry[0] == None:
+                    displayText = "Turn over"
+                print( lastEntry[3], lastEntry[4], lastEntry[8], lastEntry[9])
+                if lastEntry[3] and lastEntry[4] == str(False) and lastEntry[7] == None and lastEntry[8] == None:
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " + lastEntry[2] + " to " + lastEntry[3]
+                if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None:
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + " roll on " + lastEntry[3] + " from " + lastEntry[2]
+                if lastEntry[8] == str(True):
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " passed their turn"
+                if lastEntry[9] == str(True):
+                    displayText = "Rook " + lastEntry[0] + " of corps " + lastEntry[1] + " attacked " + lastEntry[6] + " from afar with a roll of " + str(lastEntry[5])
+                if lastEntry[7] != None:
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " transfered to corps " + lastEntry[7]
+                if "wk1" in Piece.graveyard:
+                    displayText = "Game over! Black wins."
+                if "bk1" in Piece.graveyard:
+                    displayText = "Game over! White wins."
+                self.canvas.create_text(530,285 + (i * 30),fill="black",font="Times 10",anchor="w",
+                                        text=displayText, tag="HistoryText")
+                # Game over overwrites everything here, maybe fix
+            except Exception as e:
+                print(e)
+                return
 
     def change_active_status(self, team, corps, reset):
         for i in range(8):
@@ -534,6 +566,8 @@ class CHESSBOARD:
         kBool, lBool = False, False
         coreList = [1, 2, 3]
         if(self.locationLockedIn):
+            if "wk1" in Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID or "bk1" in Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID:
+                return
             coreList.remove(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps)
             print(coreList)
             top = Toplevel()
