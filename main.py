@@ -289,6 +289,11 @@ class CHESSBOARD:
                 #    print("white shit's broke")
             corpsOrder = []
             del ai
+            
+    ###### constant AI function (toggle instead of 1 run on click) ######
+    def constantAI(self):
+        
+        return 
 
     # moveToCoords is a tuple
     def piece_move(self, moveToCoords, heldPiece):
