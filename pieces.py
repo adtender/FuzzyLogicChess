@@ -159,15 +159,20 @@ class Piece:
                         i[2] = 0
                     if (moves[xSearch][ySearch] == None and col != 2): # if no piece on first outward radiation
                         self.availMoves.append([xSearch, ySearch])
-
-                    if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 0 
-                        and moves[xSearch][ySearch].team != team):
-                            self.availAttacks.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
                         self.availMoves.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 1 and moves[xSearch][ySearch].team != team):
                         self.availMoves.append([xSearch, ySearch])
                         self.availAttacks.append([xSearch, ySearch])
+            for row in range (-3, 4):
+                xSearch = pieceLocX + row
+                for col in range (-3, 4):
+                    ySearch = pieceLocY + col
+                    if (xSearch < 0 or xSearch > 7 or ySearch < 0 or ySearch > 7):
+                        continue
+                    if(moves[xSearch][ySearch] != None and moves[xSearch][ySearch].team != team):
+                        self.availAttacks.append([xSearch, ySearch])
+                
         self.availMoves = self.remove_deuplicates(self.availMoves)
         self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
