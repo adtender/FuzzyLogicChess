@@ -33,6 +33,7 @@ class CHESSBOARD:
     conn = ""
     historyArray = []
     lastDisplayTest = ""
+    gameOverFlag = False
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
@@ -379,14 +380,6 @@ class CHESSBOARD:
     # moveToCoords is a tuple
     def piece_move(self, moveToCoords, heldPiece):
         
-        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
-            for i in range(8):
-                for j in range(8):
-                    if Piece.chessboard[i][j]:
-                        Piece.chessboard[i][j].active = False
-            print("Game over")
-            return
-        
         print("Move to coords: ", moveToCoords)
         print("Held piece: ", heldPiece)
         print("Held piece avail moves", heldPiece.availMoves)
@@ -402,21 +395,20 @@ class CHESSBOARD:
 
         if (tuple(moveToCoords) not in heldPiece.availMoves and 
         tuple(moveToCoords) not in heldPiece.availAttacks):
-            print("AAAAAAAAAAAAAAAAAAA")
             return
 
         #self.turn_forward(heldPiece)
-        print("BBBBBBBBBBBB")
 
         if attackCheck == False and moveCheck: # moves with no attacks
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                    (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(moveToCoords), str(False), None, None, None, None, str(False), None))
+            self.conn.commit()
             img = eval("self." # TODO: send to new method
                 + heldPiece.pieceID[:-1])
             self.canvas.delete(heldPiece.pieceID)
             self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
             heldPiece.move(moveToCoords[0], moveToCoords[1])
-            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                                    (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(False), None, None, None, None, str(False), None))
-            self.conn.commit()
+            
         if moveCheck and attackCheck: # moves with attacks
             
             #Right Here
@@ -426,6 +418,9 @@ class CHESSBOARD:
             #self.canvas.tag_raise("dice" + str(Piece.diceVal))
             pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None))
+            self.conn.commit()
             if b:
                 img = eval("self." # TODO: send to new method
                     + heldPiece.pieceID[:-1])
@@ -436,22 +431,22 @@ class CHESSBOARD:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
-            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None))
-            self.conn.commit()
+            
+            
             
         if moveCheck == False and attackCheck: #rook attack from afar
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
             pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(self.locationLock), str(True), Piece.diceVal, pieceAttackedID, None, None, str(True), None))
+            self.conn.commit()
             if b:
                 gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
                 self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
-            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(self.locationLock), str(True), Piece.diceVal, pieceAttackedID, None, None, str(True), None))
-            self.conn.commit()
+
         #print(Piece.chessboard)
         self.turn_forward(heldPiece)
         
@@ -474,6 +469,8 @@ class CHESSBOARD:
             self.canvas.tag_raise("corpsb1r")
             self.canvas.tag_raise("corpsb2r")
             self.canvas.tag_raise("corpsb3r")
+            self.gameOverFlag = True
+            return
 
         
         self.locationLockedIn = False
@@ -559,13 +556,25 @@ class CHESSBOARD:
             self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
             self.reset_corps_inidcator(pieceObject.team * -1)
             self.ai_function_continuous()
+            self.canvas.after(0, self.turn_change_animation, 0, pieceObject.team * -1)
          
         self.history_box_text()
-        i = 0
-        self.canvas.after(0, self.dice_roll_animation, i, pieceObject.team * -1)
+        
         
     def turn_change_animation(self, i, team):
-        return
+        #def highlight(htag, chessboard, yBoard, xBoard, color):
+        if i == 0:
+            for row in range(8):
+                for col in range(8):
+                    if Piece.chessboard[row][col]:
+                        if Piece.chessboard[row][col].team == team:
+                            highlight("hlight", self, row, col, self.color4)               
+        if i == 1:
+            self.canvas.delete("hlight")
+        if i >= 2:
+            return
+        self.canvas.after(75, self.turn_change_animation, i+1, team)
+        
         
     def history_box_text(self):
         self.canvas.delete("HistoryText")
@@ -589,21 +598,30 @@ class CHESSBOARD:
                 if lastEntry[7] != None:
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " transfered to corps " + lastEntry[7]
                 if "wk1" in Piece.graveyard:
-                    displayText = "Game over! Black wins."
+                    displayText2 = "Game over! Black wins."
                 if "bk1" in Piece.graveyard:
-                    displayText = "Game over! White wins."
+                    displayText2 = "Game over! White wins."
                 self.canvas.create_text(530,285 + (i * 30),fill="black",font="Times 10",anchor="w",
                                         text=displayText, tag="HistoryText")
-                if (i == 1 and not "Turn over" in displayText):
-                    #print("\t\tDisplay text: ", displayText)
+                
+                if (i == 1 and not "Turn over" in displayText and not "Game over!" in displayText):
                     self.historyArray.append(displayText)
-                elif (i == 1 and "Turn over" in displayText):
-                    self.lastDisplayTest = displayText
-                    turnOverBool = True
-                if (i == 2 and turnOverBool == True):
+                #elif (i == 1 and "Turn over" in displayText or "Game over!" in displayText):
+                #    self.lastDisplayTest = displayText
+                #    turnOverBool = True
+                elif (i == 1):
+                    if "Turn over" in displayText:
+                        self.lastDisplayTest = displayText
+                        turnOverBool = True
+                    if "Game over!" in displayText:
+                        self.lastDisplayTest = displayText
+                        turnOverBool = True
+                if (i == 2 and turnOverBool == True and self.gameOverFlag == False):
                     self.historyArray.append(displayText)
                     self.historyArray.append(self.lastDisplayTest)
-                    #print("\t\t\t" + displayText)
+                if (i == 2 and turnOverBool == True and self.gameOverFlag == True):
+                    self.historyArray.append(self.lastDisplayTest)
+                    self.historyArray.append(displayText2)
                     
                 
                 # Game over overwrites everything here, maybe fix
