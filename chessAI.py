@@ -29,6 +29,7 @@ class ChessAI:
 
     def set_legal_moves(self):
         allMoves = []
+        Piece.check_all_moves()
         for piece in self.alivePieces:
             allMoves.append((piece.pieceID, piece.availMoves))
 
@@ -143,14 +144,15 @@ class ChessAI:
             if len(piece[1]) > 0:
                 piecesWithMoves.append(piece)
                 
-        print("\nPieces with moves: ", piecesWithMoves)
+        ###testing### 
+        # print("\nPieces with moves: ", piecesWithMoves)
         
         for piece2 in piecesWithMoves:
             for move in piece2[1]:
                 scores.append((piece2[0], move, self.eval_move(piece2, move)))
         
-        
-        print("\nScores: ", scores)
+        ###testing###
+        #print("\nScores: ", scores)
         return scores
     
     # takes in move coords (row, col)
@@ -329,8 +331,9 @@ def test_move2(pieceID, row, col):
 
 # move pieces
 # test_move("wp4", 2, 3)
-test_move("bp5", 5, 4)
-
+# test_move("bp5", 5, 4)
+'''
 aiTest.move(1)
 aiTest.move(2)
 aiTest.move(3)
+'''
