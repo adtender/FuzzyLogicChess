@@ -7,7 +7,6 @@ import time
 import random
 import sqlite3
 import random
-import threading
 from PIL import ImageTk, Image
 from pieces import Piece
 from chessAI import ChessAI, RandomAI
@@ -410,7 +409,12 @@ class CHESSBOARD:
                                     (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(False), None, None, None, None, str(False), None))
             self.conn.commit()
         if moveCheck and attackCheck: # moves with attacks
-            self.canvas.tag_raise("dice" + str(Piece.diceVal))
+            
+            #Right Here
+            i = 0
+            self.canvas.after(0, self.dice_roll_animation, i, self.rand_dice())
+            
+            #self.canvas.tag_raise("dice" + str(Piece.diceVal))
             pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
             if b:
@@ -464,6 +468,18 @@ class CHESSBOARD:
 
         
         self.locationLockedIn = False
+        
+    def dice_roll_animation(self, i, x):
+        self.canvas.tag_raise("dice" + str(self.rand_dice()))
+        i += 1
+        if i < 12:
+            y = self.rand_dice()
+            while y == x:
+                y = self.rand_dice()
+            self.canvas.after(50 , self.dice_roll_animation, i, y)
+        else:
+            self.canvas.tag_raise("dice" + str(Piece.diceVal))
+        return
 
     def bishop_death(self, piece):
         x, y = 0, 0
