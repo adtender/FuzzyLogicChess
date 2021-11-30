@@ -36,9 +36,30 @@ class ChessAI:
         
         return allMoves
 
-    #TODO: Add attacked pieces in consideration for heuristic. Maybe a thing for Hard AI
+    # check all enemy moves, if any friendly piece is on location of an enemy attack, add it to a list
     def set_attacked_pieces(self):
-        return
+        # call set alive pieces just in case
+        self.set_alive_pieces()
+        
+        attacked = []
+        enemyPieces = Piece.getTeamPieces(self.team * - 1)
+        enemyAttacks = []
+
+        # generating enemy attacks 
+        for piece in enemyPieces:
+            if len(piece.availAttacks) > 0:
+                for attack in piece.availAttacks:
+                    enemyAttacks.append(attack)
+            
+        # check if friendly pieces are attacked
+        for friendlyPiece in self.alivePieces:
+            row = friendlyPiece.location[0]
+            col = friendlyPiece.location[1]
+        
+            if [row, col] in enemyAttacks:
+                attacked.append(friendlyPiece)
+        
+        return attacked
     
     # returns score of move 
     def eval_move(self, piece, move):
@@ -70,7 +91,7 @@ class ChessAI:
             defender = Piece.chessboard[move[0]][move[1]]
             attackIndex = Piece.pieceData.index(pieceName.pieceType)
             defenderIndex = Piece.pieceData.index(defender.pieceType)
-            captureInfo = Piece.captureMatrix[attackIndex][defenderIndex]
+            captureInfo = str(Piece.captureMatrix[attackIndex][defenderIndex])
             if(len(captureInfo) >= 5):
                 score += 5
             elif(len(captureInfo) >= 3):
@@ -84,12 +105,26 @@ class ChessAI:
                 score += 20
             if(defender.pieceType == 'b'):
                 score += 15
-       
+               
+               
+        # increase score if piece is attacked
+        # pawns get no increase in score as they often protect more important pieces 
+        attackedPieces = self.set_attacked_pieces()
+        
+        if(piece in attackedPieces):
+            if(piece.pieceType == 'k'):
+                score += 20
+            elif(piece.pieceType == 'b'):
+                score += 15
+            elif(piece.pieceType == 'h' or piece.pieceType == 'r'):
+                score += 5
             
         return score
     
     # returns array of tuples (pieceID, move [row, col], score)
     def score_pieces(self):
+        self.set_alive_pieces()
+        self.set_legal_moves()
         
         allMoves = self.legalMoves
         piecesWithMoves = []
@@ -130,14 +165,16 @@ class ChessAI:
     # takes in corps to move. Probably easier to track active corps this way in main.py
     def move(self, corps):
         # call move on the piece that has the highest heuristic value
-        # should this include corps? 
-            # like should it account for all 3 moves separately, or will that be a main.py function?
             
         # TODO: Iterate through scores array, keep best move for each corps and move that piece. 
         #       If a corps commander is dead, (this shouldnt be an issue when we get corps transfers implemented), then nothing moves for that corps.
         #       bestMoveCorps1, bestMoveCorps2. bestMoveCorps3 = ~~~~~, ~~~~~, ~~~~~
         
+        print("---In move---")
+        
         moves = self.score_pieces()
+        
+        print("---After score pieces call in move---")
         
         bestMoveScore = -1
         tiedScores = []
@@ -244,12 +281,14 @@ aiTest.score_pieces()
 
 def test_move(pieceID, row, col):
     piece = Piece.find_piece(pieceID)
-    print(piece)
+    print(piece, piece.location)
     
     piece.move(row, col)
     
     newBoard = Piece.chessboard
 
+    tempRow = piece.location[0] 
+    tempCol = piece.location[1]
         
     # clear current space
     Piece.chessboard[piece.location[0]][piece.location[1]] = None
@@ -258,6 +297,8 @@ def test_move(pieceID, row, col):
     Piece.check_all_moves()
     
     print("------------After test_move-------------\n", Piece.chessboard)
+    
+    print(piece, piece.location)
     
     return Piece.chessboard
 
@@ -282,35 +323,7 @@ def test_move2(pieceID, row, col):
 # move pieces
 # test_move("wp4", 2, 3)
 test_move("bp5", 5, 4)
-Piece.chessboard
-
-# aiTest.score_pieces()
 
 aiTest.move(1)
-
-# show board
-
-'''
-i = -1
-while True:
-
-    ai1 = RandomAI(i)
-    ai1.set_alive_pieces()
-    ai1.set_legal_moves()
-
-    activeCorps = [1, 1, 1]
-
-    # print("Alive pieces: ", ai1.alivePieces)
-    # print("Legal Moves: ", ai1.legalMoves)
-
-    while activeCorps != [2, 2, 2]:
-        randomCorps = random.randint(1, 3)
-        if(activeCorps[randomCorps-1] == 1):
-            time.sleep(3)
-            print("Move: ", ai1.move(randomCorps))
-            activeCorps[randomCorps-1] += 1
-            print("\n\n\n")
-    
-    i *= -1
-    print("____________________________________")
-'''
+aiTest.move(2)
+aiTest.move(3)

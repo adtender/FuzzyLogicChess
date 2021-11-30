@@ -246,6 +246,30 @@ class Piece:
         attacker.location = [self.location[0], self.location[1]]
         self.active = False
         return self
+    
+    def getAllPieces():
+        allPieces = []
+        for row in Piece.chessboard:
+            for piece in row:
+                if isinstance(piece, Piece):
+                    allPieces.append(piece)
+
+        return allPieces
+    
+    def getTeamPieces(teamToGet):
+        if(teamToGet == -1 or teamToGet == "white" or teamToGet == "w"):
+            team = -1
+        elif(teamToGet == 1 or teamToGet == "black" or teamToGet == "b"):
+            team = 1
+        
+        teamPieces = []
+        for row in Piece.chessboard:
+            for piece in row:
+                if(isinstance(piece, Piece) and piece.team == team):
+                    teamPieces.append(piece)
+
+        return teamPieces
+
 
     ### update moves... all pieces that are active, check their moves.
     ## def update moves?
@@ -308,7 +332,6 @@ class Piece:
         Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4], False)
         Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3], False)
 
-        # this should also call check moves after ALL pieces have been created.
 
         Piece.check_all_moves()
 
