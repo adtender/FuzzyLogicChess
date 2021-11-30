@@ -326,7 +326,7 @@ def test_move2(pieceID, row, col):
     print("------------After test_move-------------\n", Piece.chessboard)
     
     return Piece.chessboard
-
+'''
 # move pieces
 # test_move("wp4", 2, 3)
 test_move("bp5", 5, 4)
@@ -334,3 +334,4 @@ test_move("bp5", 5, 4)
 aiTest.move(1)
 aiTest.move(2)
 aiTest.move(3)
+'''

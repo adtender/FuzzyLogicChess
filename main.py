@@ -31,6 +31,8 @@ class CHESSBOARD:
     db_loc = './data/db/'
     cursor = ""
     conn = ""
+    historyArray = []
+    lastDisplayTest = ""
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
@@ -456,13 +458,15 @@ class CHESSBOARD:
         
     def history_box_text(self):
         self.canvas.delete("HistoryText")
+        displayText = ""
+        turnOverBool = False
         for i in range (1, 11):
             try:
                 lastEntry = self.cursor.execute('select * from HISTORY').fetchall()[-1 * i]
-                displayText = ""
+                #print(lastEntry)
+                
                 if lastEntry[0] == None:
                     displayText = "Turn over"
-                print( lastEntry[3], lastEntry[4], lastEntry[8], lastEntry[9])
                 if lastEntry[3] and lastEntry[4] == str(False) and lastEntry[7] == None and lastEntry[8] == None:
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " + lastEntry[2] + " to " + lastEntry[3]
                 if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None:
@@ -479,8 +483,22 @@ class CHESSBOARD:
                     displayText = "Game over! White wins."
                 self.canvas.create_text(530,285 + (i * 30),fill="black",font="Times 10",anchor="w",
                                         text=displayText, tag="HistoryText")
+                if (i == 1 and not "Turn over" in displayText):
+                    #print("\t\tDisplay text: ", displayText)
+                    self.historyArray.append(displayText)
+                elif (i == 1 and "Turn over" in displayText):
+                    self.lastDisplayTest = displayText
+                    turnOverBool = True
+                if (i == 2 and turnOverBool == True):
+                    self.historyArray.append(displayText)
+                    self.historyArray.append(self.lastDisplayTest)
+                    #print("\t\t\t" + displayText)
+                    
+                
                 # Game over overwrites everything here, maybe fix
             except Exception as e:
+                #print("Display text: ", displayText)
+                #self.historyArray.append(displayText)
                 print(e)
                 return
 
@@ -605,6 +623,17 @@ class CHESSBOARD:
             if Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps == 3:
                 tk.Button(top,text="Transfer to corps " + str(coreList[1]), width = 22, 
                           command=lambda: self.transfer_action(coreList[1], self.locationLock[0], self.locationLock[1], top)).pack(side=RIGHT)
+                
+    def history_popup(self):
+        top = Toplevel()
+        top.title('History')
+        print(self.historyArray)
+        try:
+            for i in range(len(self.historyArray)):
+                tk.Label(top, text=self.historyArray[i]).pack()
+        except Exception as e:
+            print(e)
+        return
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
@@ -758,9 +787,6 @@ def main():
                 chessboard.ai_function()
                 chessboard.whiteAI = False
             
-        
-
-
         def black_ai():
             '''
             if chessboard.BlackAI == False:
@@ -794,7 +820,8 @@ def main():
                                             corner_radius=10,
                                             border_width=0,
                                             width= chessboard.width/4.64,
-                                            hover=True)
+                                            hover=True,
+                                            command=chessboard.history_popup)
         pass_button = TkinterCustomButton(text="Pass Turn", 
                                             bg_color=None,
                                             fg_color="#58636F",
