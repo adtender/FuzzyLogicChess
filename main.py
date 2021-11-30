@@ -323,7 +323,7 @@ class CHESSBOARD:
                     break
             i = 0
             self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
-            corpsOrder = []
+            # corpsOrder = []
             del ai
         
         if self.whiteAI == True:
@@ -350,12 +350,12 @@ class CHESSBOARD:
             print("hello")
             i = 0
             self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
-            corpsOrder = []
+            # corpsOrder = []
             del ai   
          
     def ai_custom(self, ai, corpsOrder, i, c1Active, c2Active, c3Active):
         if i >= 3: return
-        print("AAAAAAAAAAAAAAfdafdafsdafadsAAAAAAAAAAA", corpsOrder)
+        print("AAAAAAAAAAAAAAfdafdafsdafadsAAAAAAAAAAA", i, corpsOrder)
         ai.set_alive_pieces()
         ai.set_legal_moves()
         moveInfo = ai.move(corpsOrder[i])
@@ -379,6 +379,15 @@ class CHESSBOARD:
 
     # moveToCoords is a tuple
     def piece_move(self, moveToCoords, heldPiece):
+        
+        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j]:
+                        Piece.chessboard[i][j].active = False
+            print("Game over")
+            return
+        
         print("Move to coords: ", moveToCoords)
         print("Held piece: ", heldPiece)
         print("Held piece avail moves", heldPiece.availMoves)
@@ -533,7 +542,7 @@ class CHESSBOARD:
         if (self.corpsPlayed[0]==2 and self.corpsPlayed[1]==2 and self.corpsPlayed[2]==2):
             self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
             self.reset_corps_inidcator(pieceObject.team * -1)
-            #self.ai_function_continuous()
+            self.ai_function_continuous()
          
         self.history_box_text()
         
