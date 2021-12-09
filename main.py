@@ -239,7 +239,7 @@ class CHESSBOARD:
                 if (c1Active == False and c2Active == False and c3Active == False): break
                 #try:
                     #piece = self.return_corps(i+1, -1)
-                # time.sleep(.5)
+                time.sleep(2)
                 ai.set_alive_pieces()
                 ai.set_legal_moves()
                 moveInfo = ai.move(corpsOrder[i])
@@ -280,7 +280,7 @@ class CHESSBOARD:
                 if (c1Active == False and c2Active == False and c3Active == False): break
                 #try:
                     #piece = self.return_corps(i+1, -1)
-                time.sleep(0.5)
+                time.sleep(2)
                 ai.set_alive_pieces()
                 ai.set_legal_moves()
                 moveInfo = ai.move(corpsOrder[i])
@@ -322,7 +322,7 @@ class CHESSBOARD:
                 if len(corpsOrder) == 3:
                     break
             i = 0
-            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+            self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
             # corpsOrder = []
             del ai
         
@@ -349,7 +349,7 @@ class CHESSBOARD:
                     break
             print("hello")
             i = 0
-            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+            self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
             # corpsOrder = []
             del ai   
          
@@ -368,7 +368,7 @@ class CHESSBOARD:
             self.piece_move(list(moveInfo[1]), pieceHeld)
         i += 1
         if i < 3:
-            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+            self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
         return
     
             

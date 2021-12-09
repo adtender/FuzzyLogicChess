@@ -63,8 +63,12 @@ class ChessAI:
         return attacked
     
     # returns score of move 
+    # TODO: Add 2 (3?) categories, aggressive, defensive, neutral(?)
     def eval_move(self, piece, move):
         score = 0
+        
+        defScore = 0
+        # neutralScore = 0
         
         pieceName = Piece.find_piece(piece[0])
         
@@ -74,6 +78,19 @@ class ChessAI:
             score += 7
         elif(oppKingDist <= 5):
             score += 4
+            
+        # defensive score increases if closer to friendly king    
+        friendlyKingDist = self.dist_from_friendly_king(move)
+        if(friendlyKingDist <= 2):
+            defScore += 7
+        elif(friendlyKingDist <= 4):
+            defScore += 4
+            
+        friendlyBishDist = self.dist_from_friendly_bishop(move)
+        if(friendlyBishDist <= 2):
+            defScore += 4
+        elif(friendlyBishDist <= 4):
+            defScore += 2
             
         # If its an attack, add corresponding values to score
         # 4 tiers:
@@ -170,6 +187,42 @@ class ChessAI:
         
         return dist
     
+    def dist_from_friendly_king(self, move):
+        dist = 0
+        
+        if(self.team == 1):
+            kingLoc = [Piece.find_piece("bk1").location[0], Piece.find_piece("bk1").location[1]]
+        if(self.team == -1):
+            kingLoc = [Piece.find_piece("wk1").location[0], Piece.find_piece("wk1").location[1]]
+            
+        dist = abs(math.dist(move, kingLoc))
+        # print("Distance from king: ", dist)
+        
+        return dist
+    
+    def dist_from_friendly_bishop(self, move):
+        dist = 0
+        
+        if(self.team == 1):
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b1Loc = [Piece.find_piece("wb1").location[0], Piece.find_piece("wb1").location[1]]
+            
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b2Loc = [Piece.find_piece("wb2").location[0], Piece.find_piece("wb2").location[1]]
+            
+            dist = max(abs(math.dist(move, b1Loc)), abs(math.dist(move, b2Loc)))
+            
+        if(self.team == -1):
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b1Loc = [Piece.find_piece("wb1").location[0], Piece.find_piece("wb1").location[1]]
+            
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b2Loc = [Piece.find_piece("wb2").location[0], Piece.find_piece("wb2").location[1]]
+            
+            dist = max(abs(math.dist(move, b1Loc)), abs(math.dist(move, b2Loc)))
+            
+        print("Distance from friendly bishop: ", dist)
+        return dist
     
     # takes in corps to move. Probably easier to track active corps this way in main.py
     # returns highest score move for the entered corps (pieceID, move coords, score)
