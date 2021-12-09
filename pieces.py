@@ -3,6 +3,7 @@ import pandas as pd
 import copy
 from collections import deque 
 import random
+import math
 
 class Piece:
 
@@ -203,6 +204,11 @@ class Piece:
         result = False
         roll = Piece.diceVal
         print(roll)
+        pieceLocY = self.location[0]
+        pieceLocX = self.location[1]
+        
+        defLocY = defender.location[0]
+        defLocX = defender.location[1]
         
         # find index to use
         attackIndex = Piece.pieceData.index(self.pieceType)
@@ -227,7 +233,32 @@ class Piece:
             
             if shouldUpdate == True:
                 defender.replace_piece(self)
+        
+        else:
+            overlapMoves = []
             
+            for col in range(defLocX-1, defLocX+2):
+                for row in range(defLocY-1, defLocY+2):
+                    if(col < 0 or col >= 8):
+                        continue
+                    if(row < 0 or row >= 8):
+                        continue
+                    # check for overlap of attacker availMoves 
+                    if([row, col] in self.availMoves):
+                        overlapMoves.append([row, col])
+            print("OverlapMoves: ", overlapMoves)
+                        
+            # pick a square that overlaps 
+            # randIndex = random.randint(0, len(self.overlapMoves)-1)
+            # pick the closest to original location
+            closest = []
+            closestDist = 99
+            for overlapMove in overlapMoves:
+                dist = abs(math.dist(overlapMove, [pieceLocY, pieceLocX]))
+                if dist < closestDist:
+                    closest = overlapMove
+                    closestDist = dist
+            print("Closest availMove: ", closest)
 
         print("Graveyard: ", Piece.graveyard)
         #print("Chessboard: \n", Piece.chessboard)
