@@ -1,6 +1,7 @@
 import random
 from pieces import Piece 
 import time
+import math
 
 class ChessAI:
 
@@ -28,6 +29,7 @@ class ChessAI:
 
     def set_legal_moves(self):
         allMoves = []
+        Piece.check_all_moves()
         for piece in self.alivePieces:
             allMoves.append((piece.pieceID, piece.availMoves))
 
@@ -35,19 +37,242 @@ class ChessAI:
         
         return allMoves
 
+    # check all enemy moves, if any friendly piece is on location of an enemy attack, add it to a list
     def set_attacked_pieces(self):
-        return
+        # call set alive pieces just in case
+        self.set_alive_pieces()
+        
+        attacked = []
+        enemyPieces = Piece.getTeamPieces(self.team * - 1)
+        enemyAttacks = []
+
+        # generating enemy attacks 
+        for piece in enemyPieces:
+            if len(piece.availAttacks) > 0:
+                for attack in piece.availAttacks:
+                    enemyAttacks.append(attack)
+            
+        # check if friendly pieces are attacked
+        for friendlyPiece in self.alivePieces:
+            row = friendlyPiece.location[0]
+            col = friendlyPiece.location[1]
+        
+            if [row, col] in enemyAttacks:
+                attacked.append(friendlyPiece)
+        
+        return attacked
     
-    def move(self):
+    # returns score of move 
+    # TODO: Add 2 (3?) categories, aggressive, defensive, neutral(?)
+    def eval_move(self, piece, move):
+        score = 0
+        
+        defScore = 0
+        # neutralScore = 0
+        
+        pieceName = Piece.find_piece(piece[0])
+        
+        # distance from enemy king (the closer the better)
+        oppKingDist = self.dist_from_enemy_king(move)
+        if(oppKingDist <= 3):
+            score += 7
+        elif(oppKingDist <= 5):
+            score += 4
+            
+        # defensive score increases if closer to friendly king    
+        friendlyKingDist = self.dist_from_friendly_king(move)
+        if(friendlyKingDist <= 2):
+            defScore += 7
+        elif(friendlyKingDist <= 4):
+            defScore += 4
+            
+        friendlyBishDist = self.dist_from_friendly_bishop(move)
+        if(friendlyBishDist <= 2):
+            defScore += 4
+        elif(friendlyBishDist <= 4):
+            defScore += 2
+            
+        # If its an attack, add corresponding values to score
+        # 4 tiers:
+        # If success likely (if 5+ numbers in capturematrix): +5
+        # If slightly likely: (if 3-4 numbers in capture matrix): +3
+        # If unlikely: (2 numbers in capturematrix): +2
+        # If almost impossible: (1 number): +1
+        
+        # TODO: If attack is on the king, do it automatically? or conditionally... if piece is likely to capture 
+            # also bishops
+        if(move in pieceName.availAttacks):
+            
+            # score bonus for being an attack
+            score += 3
+            
+            defender = Piece.chessboard[move[0]][move[1]]
+            attackIndex = Piece.pieceData.index(pieceName.pieceType)
+            defenderIndex = Piece.pieceData.index(defender.pieceType)
+            captureInfo = str(Piece.captureMatrix[attackIndex][defenderIndex])
+            if(len(captureInfo) >= 5):
+                score += 5
+            elif(len(captureInfo) >= 3):
+                score += 3
+            elif(len(captureInfo) == 2):
+                score += 2
+            elif(len(captureInfo) < 2):
+                score += 1
+                
+            # priority for attacking commanders    
+            if(defender.pieceType == 'k'):
+                score += 20
+            if(defender.pieceType == 'b'):
+                score += 15
+            
+            # prio for attacking strong piece
+            if(defender.pieceType == 'q'):
+                score += 8
+            if(defender.pieceType == 'h'):
+                score += 8
+               
+               
+        # increase score if piece is attacked
+        # pawns get no increase in score as they often protect more important pieces 
+        attackedPieces = self.set_attacked_pieces()
+        
+        if(piece in attackedPieces):
+            if(piece.pieceType == 'k'):
+                score += 20
+            elif(piece.pieceType == 'b'):
+                score += 15
+            elif(piece.pieceType == 'h' or piece.pieceType == 'r'):
+                score += 5
+            
+        return score
+    
+    # returns array of tuples (pieceID, move [row, col], score)
+    def score_pieces(self):
+        self.set_alive_pieces()
+        self.set_legal_moves()
+        
+        allMoves = self.legalMoves
+        piecesWithMoves = []
+    
+        scores = []
+        
+        # loop through active pieces, score
+        for piece in allMoves:
+            if len(piece[1]) > 0:
+                piecesWithMoves.append(piece)
+                
+        ###testing### 
+        # print("\nPieces with moves: ", piecesWithMoves)
+        
+        for piece2 in piecesWithMoves:
+            for move in piece2[1]:
+                scores.append((piece2[0], move, self.eval_move(piece2, move)))
+        
+        ###testing###
+        #print("\nScores: ", scores)
+        return scores
+    
+    # takes in move coords (row, col)
+    # returns distance from king in cartesian coordinates
+    def dist_from_enemy_king(self, move):
+        dist = 0
+        
+        if(self.team == 1):
+            kingLoc = [Piece.find_piece("wk1").location[0], Piece.find_piece("wk1").location[1]]
+        if(self.team == -1):
+            kingLoc = [Piece.find_piece("bk1").location[0], Piece.find_piece("bk1").location[1]]
+            
+        dist = abs(math.dist(move, kingLoc))
+        # print("Distance from king: ", dist)
+        
+        return dist
+    
+    def dist_from_friendly_king(self, move):
+        dist = 0
+        
+        if(self.team == 1):
+            kingLoc = [Piece.find_piece("bk1").location[0], Piece.find_piece("bk1").location[1]]
+        if(self.team == -1):
+            kingLoc = [Piece.find_piece("wk1").location[0], Piece.find_piece("wk1").location[1]]
+            
+        dist = abs(math.dist(move, kingLoc))
+        # print("Distance from king: ", dist)
+        
+        return dist
+    
+    def dist_from_friendly_bishop(self, move):
+        dist = 0
+        
+        if(self.team == 1):
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b1Loc = [Piece.find_piece("wb1").location[0], Piece.find_piece("wb1").location[1]]
+            
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b2Loc = [Piece.find_piece("wb2").location[0], Piece.find_piece("wb2").location[1]]
+            
+            dist = max(abs(math.dist(move, b1Loc)), abs(math.dist(move, b2Loc)))
+            
+        if(self.team == -1):
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b1Loc = [Piece.find_piece("wb1").location[0], Piece.find_piece("wb1").location[1]]
+            
+            if(Piece.find_piece("wb1") not in Piece.graveyard):
+                b2Loc = [Piece.find_piece("wb2").location[0], Piece.find_piece("wb2").location[1]]
+            
+            dist = max(abs(math.dist(move, b1Loc)), abs(math.dist(move, b2Loc)))
+            
+        print("Distance from friendly bishop: ", dist)
+        return dist
+    
+    # takes in corps to move. Probably easier to track active corps this way in main.py
+    # returns highest score move for the entered corps (pieceID, move coords, score)
+    def move(self, corps):
         # call move on the piece that has the highest heuristic value
-        # should this include corps? 
-            # like should it account for all 3 moves separately, or will that be a main.py function?
-        print("move")
+            
+        # TODO: Iterate through scores array, keep best move for each corps and move that piece. 
+        #       If a corps commander is dead, (this shouldnt be an issue when we get corps transfers implemented), then nothing moves for that corps.
+        #       bestMoveCorps1, bestMoveCorps2. bestMoveCorps3 = ~~~~~, ~~~~~, ~~~~~
+        
+        print("---In move---")
+        
+        moves = self.score_pieces()
+        
+        print("---After score pieces call in move---")
+        
+        bestMoveScore = -1
+        tiedScores = []
+        
+        for move in moves:
+            piece = Piece.find_piece(move[0])
+            
+            if piece.corps == corps:
+                # corpsMoves.append(move)
+                
+                # check if score is higher than current best and set if true
+                if move[2] > bestMoveScore:
+                    tiedScores = []         #clear tied scores array
+                    bestMoveScore = move[2]
+                    bestMove = move
+                    tiedScores.append(move)
+                elif move[2] == bestMoveScore:
+                    tiedScores.append(move)
+                    
+        # if tied scores has moves in it, pick a random move
+        if len(tiedScores) > 1:
+            bestMove = tiedScores[random.randint(0, len(tiedScores)-1)]
+            
+        # bestMoveScore = max(corpsMoves, key=lambda item: item[2])
+        # bestMove = corpsMoves.index(bestMoveScore, key=lambda item: item[2])
+        # I thought this would be good solution^^^ but problems with index function. Will calculate max manually
+        
+        # test
+        print("bestMove: ", bestMove, "\nbestMoveScore: ", bestMoveScore)
+        
+        return bestMove
 
-    ## make random move function if heuristic is tied?
 
 
-# randomAI inherits ChessAI
+########## randomAI inherits ChessAI ##########
 class RandomAI(ChessAI):
 
     def __init__(self, team) -> None:
@@ -110,27 +335,50 @@ class RandomAI(ChessAI):
 ### driver code ###
 Piece.gen_new_board()
 
-'''
-i = -1
-while True:
+print(Piece.chessboard)
 
-    ai1 = RandomAI(i)
-    ai1.set_alive_pieces()
-    ai1.set_legal_moves()
+aiTest = ChessAI(1)
 
-    activeCorps = [1, 1, 1]
+aiTest.score_pieces()
 
-    # print("Alive pieces: ", ai1.alivePieces)
-    # print("Legal Moves: ", ai1.legalMoves)
-
-    while activeCorps != [2, 2, 2]:
-        randomCorps = random.randint(1, 3)
-        if(activeCorps[randomCorps-1] == 1):
-            time.sleep(3)
-            print("Move: ", ai1.move(randomCorps))
-            activeCorps[randomCorps-1] += 1
-            print("\n\n\n")
+def test_move(pieceID, row, col):
+    piece = Piece.find_piece(pieceID)
+    print(piece, piece.location)
     
-    i *= -1
-    print("____________________________________")
-'''
+    piece.move(row, col)
+    
+    newBoard = Piece.chessboard
+
+    tempRow = piece.location[0] 
+    tempCol = piece.location[1]
+        
+    # clear current space
+    Piece.chessboard[piece.location[0]][piece.location[1]] = None
+    piece.location = [row, col]
+    Piece.chessboard[row][col] = piece
+    Piece.check_all_moves()
+    
+    print("------------After test_move-------------\n", Piece.chessboard)
+    
+    print(piece, piece.location)
+    
+    return Piece.chessboard
+
+# use this to test without GUI?
+def test_move2(pieceID, row, col):
+    piece = Piece.find_piece(pieceID)
+    
+    if([row, col] in piece.availAttacks):
+        defender = Piece.chessboard[row][col]
+        piece.capture(defender, 1, 0)
+    elif([row, col] in piece.availMoves):
+        piece.move(row, col)
+    else:
+        print("test_move did nothing")
+        
+    Piece.check_all_moves()
+    
+    print("------------After test_move-------------\n", Piece.chessboard)
+    
+    return Piece.chessboard
+

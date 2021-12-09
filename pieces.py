@@ -159,15 +159,20 @@ class Piece:
                         i[2] = 0
                     if (moves[xSearch][ySearch] == None and col != 2): # if no piece on first outward radiation
                         self.availMoves.append([xSearch, ySearch])
-
-                    if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 0 
-                        and moves[xSearch][ySearch].team != team):
-                            self.availAttacks.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] == None and x > 7 and cr[x-8][2] == 1):
                         self.availMoves.append([xSearch, ySearch])
                     if (moves[xSearch][ySearch] != None and x > 7 and cr[x-8][2] == 1 and moves[xSearch][ySearch].team != team):
                         self.availMoves.append([xSearch, ySearch])
                         self.availAttacks.append([xSearch, ySearch])
+            for row in range (-3, 4):
+                xSearch = pieceLocX + row
+                for col in range (-3, 4):
+                    ySearch = pieceLocY + col
+                    if (xSearch < 0 or xSearch > 7 or ySearch < 0 or ySearch > 7):
+                        continue
+                    if(moves[xSearch][ySearch] != None and moves[xSearch][ySearch].team != team):
+                        self.availAttacks.append([xSearch, ySearch])
+                
         self.availMoves = self.remove_deuplicates(self.availMoves)
         self.availAttacks = self.remove_deuplicates(self.availAttacks)
 
@@ -176,14 +181,11 @@ class Piece:
     def remove_deuplicates(self, lst):
         return [t for t in (set(tuple(i) for i in lst))]
 
-    # takes board and moveLoc tuple (row, col)
+    # takes moveLoc tuple (row, col)
     def move(self, newRow, newCol):
         # function that moves the piece
         # returns a new board
         newBoard = Piece.chessboard
-        # print("New Board: ", newBoard)
-
-
 
         if((newRow, newCol) in self.availMoves):
             # clear current space
@@ -193,7 +195,6 @@ class Piece:
             
             newBoard[newRow][newCol] = self
         
-
         return newBoard
 
     # takes in defender, if dice val is given (should update board or not), and if the attack is a ranged rook attack
@@ -250,6 +251,30 @@ class Piece:
         attacker.location = [self.location[0], self.location[1]]
         self.active = False
         return self
+    
+    def getAllPieces():
+        allPieces = []
+        for row in Piece.chessboard:
+            for piece in row:
+                if isinstance(piece, Piece):
+                    allPieces.append(piece)
+
+        return allPieces
+    
+    def getTeamPieces(teamToGet):
+        if(teamToGet == -1 or teamToGet == "white" or teamToGet == "w"):
+            team = -1
+        elif(teamToGet == 1 or teamToGet == "black" or teamToGet == "b"):
+            team = 1
+        
+        teamPieces = []
+        for row in Piece.chessboard:
+            for piece in row:
+                if(isinstance(piece, Piece) and piece.team == team):
+                    teamPieces.append(piece)
+
+        return teamPieces
+
 
     ### update moves... all pieces that are active, check their moves.
     ## def update moves?
@@ -264,10 +289,10 @@ class Piece:
 
         return None
 
-
+    # TODO: Remove this?
     def eval_moves(self):
         # evaluates moves based on a heuristic
-        # put wesley function here
+        
 
         return 
 
@@ -312,7 +337,6 @@ class Piece:
         Piece.chessboard[0, 4] = Piece("bk1", "k", 1, 2, [0, 4], False)
         Piece.chessboard[0, 3] = Piece("bq1", "q", 1, 2, [0, 3], False)
 
-        # this should also call check moves after ALL pieces have been created.
 
         Piece.check_all_moves()
 
