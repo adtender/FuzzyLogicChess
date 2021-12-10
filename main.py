@@ -431,6 +431,13 @@ class CHESSBOARD:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
+            else:
+                img = eval("self." # TODO: send to new method
+                    + heldPiece.pieceID[:-1])
+                gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
+                
+                self.canvas.delete(heldPiece.pieceID)
+                self.add_piece(img, heldPiece.closestMove, str(heldPiece.pieceID))
             
             
             

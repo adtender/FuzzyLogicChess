@@ -24,6 +24,8 @@ class Piece:
     activePieces = []
     graveyard = []
     diceVal = 0
+    
+    closestMove = ()
 
     def __init__(self, id, type, team, corps, loc, active):
         self.pieceID = id
@@ -244,14 +246,14 @@ class Piece:
                     if(row < 0 or row >= 8):
                         continue
                     # check for overlap of attacker availMoves 
-                    if([row, col] in self.availMoves):
+                    if((isinstance(Piece.chessboard[row][col], Piece) == False) and (row, col) in self.availMoves):
                         overlapMoves.append([row, col])
             print("OverlapMoves: ", overlapMoves)
                         
             # pick a square that overlaps 
             # randIndex = random.randint(0, len(self.overlapMoves)-1)
             # pick the closest to original location
-            closest = []
+            closest = ()
             closestDist = 99
             for overlapMove in overlapMoves:
                 dist = abs(math.dist(overlapMove, [pieceLocY, pieceLocX]))
@@ -259,11 +261,14 @@ class Piece:
                     closest = overlapMove
                     closestDist = dist
             print("Closest availMove: ", closest)
+            self.closestMove = closest
+            self.move(closest[0], closest[1])
 
         print("Graveyard: ", Piece.graveyard)
         #print("Chessboard: \n", Piece.chessboard)
 
         return result
+
 
     # use this for rook special case?
     def kill_piece(self):
