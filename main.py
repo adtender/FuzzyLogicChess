@@ -297,7 +297,7 @@ class CHESSBOARD:
             del ai
             
     def ai_function_continuous(self):
-        print("AI Function 2 Invoked")
+        print("~~~~~AI Function 2 Invoked~~~~~")
         corpsOrder = []
         if self.BlackAI == False and self.whiteAI == False:
             return
@@ -431,7 +431,7 @@ class CHESSBOARD:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
-            else:
+            elif(heldPiece.pieceType != 'p'):
                 img = eval("self." # TODO: send to new method
                     + heldPiece.pieceID[:-1])
                 gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])

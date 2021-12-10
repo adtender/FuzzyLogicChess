@@ -234,12 +234,10 @@ class ChessAI:
             
         # TODO: Decide whether a defensive or attacking move is best? and determine move here?
         
-        print("---In move---")
+        print("---In AI move---")
         
         moves = self.score_pieces()
         
-        
-        print("---After score pieces call in move---")
         
         bestMoveScore, bestDefMoveScore = -1, -1
         

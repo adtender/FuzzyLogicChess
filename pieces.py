@@ -236,7 +236,7 @@ class Piece:
             if shouldUpdate == True:
                 defender.replace_piece(self)
         
-        else:
+        elif(self.pieceType != 'p'):
             overlapMoves = []
             
             for col in range(defLocX-1, defLocX+2):
