@@ -297,7 +297,7 @@ class CHESSBOARD:
             del ai
             
     def ai_function_continuous(self):
-        print("AI Function 2 Invoked")
+        print("~~~~~AI Function 2 Invoked~~~~~")
         corpsOrder = []
         if self.BlackAI == False and self.whiteAI == False:
             return

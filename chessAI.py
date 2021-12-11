@@ -63,7 +63,9 @@ class ChessAI:
         return attacked
     
     # returns score of move 
-    # TODO: Add 2 (3?) categories, aggressive, defensive, neutral(?)
+    # TODO: Maybe add neutral score
+    # count friendly pieces around piece to move, higher number increases defensive score
+    
     def eval_move(self, piece, move):
         score = 0
         
@@ -144,9 +146,9 @@ class ChessAI:
             elif(piece.pieceType == 'h' or piece.pieceType == 'r'):
                 score += 5
             
-        return score
+        return score, defScore
     
-    # returns array of tuples (pieceID, move [row, col], score)
+    # returns array of tuples (pieceID, move [row, col], score, defScore)
     def score_pieces(self):
         self.set_alive_pieces()
         self.set_legal_moves()
@@ -155,6 +157,7 @@ class ChessAI:
         piecesWithMoves = []
     
         scores = []
+        defScores = []
         
         # loop through active pieces, score
         for piece in allMoves:
@@ -166,7 +169,7 @@ class ChessAI:
         
         for piece2 in piecesWithMoves:
             for move in piece2[1]:
-                scores.append((piece2[0], move, self.eval_move(piece2, move)))
+                scores.append((piece2[0], move, self.eval_move(piece2, move)[0], self.eval_move(piece2, move)[1]))
         
         ###testing###
         #print("\nScores: ", scores)
@@ -221,7 +224,7 @@ class ChessAI:
             
             dist = max(abs(math.dist(move, b1Loc)), abs(math.dist(move, b2Loc)))
             
-        print("Distance from friendly bishop: ", dist)
+        # print("Distance from friendly bishop: ", dist)
         return dist
     
     # takes in corps to move. Probably easier to track active corps this way in main.py
@@ -229,19 +232,21 @@ class ChessAI:
     def move(self, corps):
         # call move on the piece that has the highest heuristic value
             
-        # TODO: Iterate through scores array, keep best move for each corps and move that piece. 
-        #       If a corps commander is dead, (this shouldnt be an issue when we get corps transfers implemented), then nothing moves for that corps.
-        #       bestMoveCorps1, bestMoveCorps2. bestMoveCorps3 = ~~~~~, ~~~~~, ~~~~~
+        # TODO: Decide whether a defensive or attacking move is best? and determine move here?
         
-        print("---In move---")
+        print("---In AI move---")
         
         moves = self.score_pieces()
         
-        print("---After score pieces call in move---")
         
-        bestMoveScore = -1
+        bestMoveScore, bestDefMoveScore = -1, -1
+        
         tiedScores = []
         
+        reason = ""
+        # for each move, check if the attacking or defensive score is higher.
+        # possibly return defensive move no matter what if commanders are under attack, but for now, 
+        #   returns highest attacking OR defensive score
         for move in moves:
             piece = Piece.find_piece(move[0])
             
@@ -254,19 +259,33 @@ class ChessAI:
                     bestMoveScore = move[2]
                     bestMove = move
                     tiedScores.append(move)
+                    reason = "Best move is attacking"
                 elif move[2] == bestMoveScore:
                     tiedScores.append(move)
+                    reason = "Best move is attacking"
+                if move[3] > bestMoveScore:
+                    tiedScores = []         #clear tied scores array
+                    bestMoveScore = move[3]
+                    bestMove = move
+                    tiedScores.append(move)
+                    reason = "Best move is defending"
+                elif move[3] == bestMoveScore:
+                    tiedScores.append(move)
+                    reason = "Best move is defending"
                     
         # if tied scores has moves in it, pick a random move
         if len(tiedScores) > 1:
             bestMove = tiedScores[random.randint(0, len(tiedScores)-1)]
+            print("There was a tie in scores")
             
         # bestMoveScore = max(corpsMoves, key=lambda item: item[2])
         # bestMove = corpsMoves.index(bestMoveScore, key=lambda item: item[2])
         # I thought this would be good solution^^^ but problems with index function. Will calculate max manually
         
         # test
+        
         print("bestMove: ", bestMove, "\nbestMoveScore: ", bestMoveScore)
+        print(reason)
         
         return bestMove
 
@@ -341,6 +360,8 @@ aiTest = ChessAI(1)
 
 aiTest.score_pieces()
 
+
+
 def test_move(pieceID, row, col):
     piece = Piece.find_piece(pieceID)
     print(piece, piece.location)
@@ -381,4 +402,6 @@ def test_move2(pieceID, row, col):
     print("------------After test_move-------------\n", Piece.chessboard)
     
     return Piece.chessboard
+
+
 
