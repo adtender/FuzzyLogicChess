@@ -371,11 +371,11 @@ class CHESSBOARD:
             self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
         return
     
-            
-    ###### constant AI function (toggle instead of 1 run on click) ######
-    def constantAI(self):
-        
-        return 
+    def numNum_LetterNum(self, coords):
+        coordsToReturn = ["z", "9"]
+        coordsToReturn[0] = f'{chr(int(coords[4]) + 97)}'
+        coordsToReturn[1] = int(coords[1])+1
+        return str(coordsToReturn[0])+ str(coordsToReturn[1])
 
     # moveToCoords is a tuple
     def piece_move(self, moveToCoords, heldPiece):
@@ -609,9 +609,9 @@ class CHESSBOARD:
                 if lastEntry[0] == None:
                     displayText = "Turn over"
                 if lastEntry[3] and lastEntry[4] == str(False) and lastEntry[7] == None and lastEntry[8] == None:
-                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " + lastEntry[2] + " to " + lastEntry[3]
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
                 if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(False):
-                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " killed " + lastEntry[6] + " with a " + str(lastEntry[5]) + ". Movement: " + lastEntry[2] + " to " + lastEntry[3]
+                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " killed " + lastEntry[6] + " with a " + str(lastEntry[5]) + ". Movement: " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
                 if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(True):
                     displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + ", failing! Movement: " + lastEntry[2] + " to " + lastEntry[3]
                 if lastEntry[8] == str(True):
