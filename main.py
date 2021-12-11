@@ -584,9 +584,17 @@ class CHESSBOARD:
                 if lastEntry[0] == None:
                     displayText = "Turn over"
                 if lastEntry[3] and lastEntry[4] == str(False) and lastEntry[7] == None and lastEntry[8] == None:
+<<<<<<< HEAD
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " +  lastEntry[2]+ " to " + lastEntry[3]                       
                 if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None:
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + " roll on " + lastEntry[3] + " from " + lastEntry[2]
+=======
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
+                if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(False):
+                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " killed " + lastEntry[6] + " with a " + str(lastEntry[5]) + ". Movement: " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
+                if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(True):
+                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + ", failing! Movement: " + lastEntry[2] + " to " + lastEntry[3]
+>>>>>>> parent of 40d80d6 (Fixed merge issues)
                 if lastEntry[8] == str(True):
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " passed their turn"
                 if lastEntry[9] == str(True):
