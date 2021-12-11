@@ -26,6 +26,7 @@ class Piece:
     diceVal = 0
     
     closestMove = ()
+    oneAway = False
 
     def __init__(self, id, type, team, corps, loc, active):
         self.pieceID = id
@@ -238,6 +239,7 @@ class Piece:
         
         else:
             overlapMoves = []
+            self.oneAway = False
             
             for col in range(defLocX-1, defLocX+2):
                 for row in range(defLocY-1, defLocY+2):
@@ -249,6 +251,13 @@ class Piece:
                     if((isinstance(Piece.chessboard[row][col], Piece) == False) and (row, col) in self.availMoves):
                         overlapMoves.append([row, col])
             print("OverlapMoves: ", overlapMoves)
+            
+            print("Both locations: ", self.location, defLocX, defLocY)
+            if (self.location[0] == defLocY or self.location[0] == defLocY-1 or self.location[0] == defLocY +1):
+                if (self.location[1] == defLocX or self.location[1] == defLocX -1 or self.location[1] == defLocX +1):
+                    self.oneAway = True
+                    print(self.oneAway)
+                    
                         
             # pick a square that overlaps 
             # randIndex = random.randint(0, len(self.overlapMoves)-1)
@@ -262,7 +271,8 @@ class Piece:
                     closestDist = dist
             print("Closest availMove: ", closest)
             self.closestMove = closest
-            self.move(closest[0], closest[1])
+            if not self.oneAway:
+                self.move(closest[0], closest[1])
 
         print("Graveyard: ", Piece.graveyard)
         #print("Chessboard: \n", Piece.chessboard)
