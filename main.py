@@ -1,17 +1,27 @@
 from tkinter import *
 import tkinter as tk
+from typing import Tuple
 import numpy as np
+import pandas as pd
 import os
 import math
 import time
 import random
 import sqlite3
 import random
+import threading
 from PIL import ImageTk, Image
 from pieces import Piece
 from chessAI import ChessAI, RandomAI
 from data.misc.tkinter_custom_button import TkinterCustomButton
 import sys
+from tkinter import simpledialog
+import pickle
+
+
+
+
+
 
 class CHESSBOARD:
     x1, y1 = None, None
@@ -33,12 +43,23 @@ class CHESSBOARD:
     conn = ""
     historyArray = []
     lastDisplayTest = ""
-    gameOverFlag = False
+    
+
+    
+
     # note for heuristic
     # have a variable called board weight which holds the sum of all piece weights on the board?
     # may make heuristic calculations easier...
     piecesBoard = np.empty((8, 8), dtype=Piece)
 
+
+
+    
+    df = pd.DataFrame(Piece.chessboard)
+    Row = ["1","2","3","4","5","6","7","8"]
+    Column = ["A","B","C","D","E","F","G","H"]
+    df = pd.DataFrame(Piece.chessboard, columns=Column, index=Row)
+    #print(df)
 
     def __init__(self, parent):
         canvas_width = self.width
@@ -51,12 +72,15 @@ class CHESSBOARD:
         self.corps_rectangles()
         self.init_dice()
         self.history_box()
+        self.savedName = ''
 
     def draw_board(self):
         intCheck = 0
         for row in range(self.rows):
             intCheck += 1
+            
             for col in range(self.columns):
+               
                 x1 = (col * self.dim_square) + 2
                 y1 = (row * self.dim_square) + 100
                 x2 = x1 + self.dim_square
@@ -239,7 +263,7 @@ class CHESSBOARD:
                 if (c1Active == False and c2Active == False and c3Active == False): break
                 #try:
                     #piece = self.return_corps(i+1, -1)
-                time.sleep(2)
+                # time.sleep(.5)
                 ai.set_alive_pieces()
                 ai.set_legal_moves()
                 moveInfo = ai.move(corpsOrder[i])
@@ -280,7 +304,7 @@ class CHESSBOARD:
                 if (c1Active == False and c2Active == False and c3Active == False): break
                 #try:
                     #piece = self.return_corps(i+1, -1)
-                time.sleep(2)
+                time.sleep(0.5)
                 ai.set_alive_pieces()
                 ai.set_legal_moves()
                 moveInfo = ai.move(corpsOrder[i])
@@ -297,7 +321,7 @@ class CHESSBOARD:
             del ai
             
     def ai_function_continuous(self):
-        print("~~~~~AI Function 2 Invoked~~~~~")
+        print("AI Function 2 Invoked")
         corpsOrder = []
         if self.BlackAI == False and self.whiteAI == False:
             return
@@ -322,7 +346,7 @@ class CHESSBOARD:
                 if len(corpsOrder) == 3:
                     break
             i = 0
-            self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
             # corpsOrder = []
             del ai
         
@@ -349,7 +373,7 @@ class CHESSBOARD:
                     break
             print("hello")
             i = 0
-            self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
             # corpsOrder = []
             del ai   
          
@@ -368,18 +392,25 @@ class CHESSBOARD:
             self.piece_move(list(moveInfo[1]), pieceHeld)
         i += 1
         if i < 3:
-            self.canvas.after(3000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
+            self.canvas.after(1000, self.ai_custom, ai, corpsOrder, i, c1Active, c2Active, c3Active)
         return
     
-    def numNum_LetterNum(self, coords):
-        coordsToReturn = ["z", "9"]
-        coordsToReturn[0] = f'{chr(int(coords[4]) + 97)}'
-        coordsToReturn[1] = int(coords[1])+1
-        return str(coordsToReturn[0])+ str(coordsToReturn[1])
+            
+    ###### constant AI function (toggle instead of 1 run on click) ######
+    def constantAI(self):
+        
+        return 
 
     # moveToCoords is a tuple
     def piece_move(self, moveToCoords, heldPiece):
         
+        if ("wk1" in Piece.graveyard or "bk1" in Piece.graveyard):
+            for i in range(8):
+                for j in range(8):
+                    if Piece.chessboard[i][j]:
+                        Piece.chessboard[i][j].active = False
+            print("Game over")
+            return
         
         print("Move to coords: ", moveToCoords)
         print("Held piece: ", heldPiece)
@@ -396,34 +427,26 @@ class CHESSBOARD:
 
         if (tuple(moveToCoords) not in heldPiece.availMoves and 
         tuple(moveToCoords) not in heldPiece.availAttacks):
+            print("AAAAAAAAAAAAAAAAAAA")
             return
 
         #self.turn_forward(heldPiece)
+        print("BBBBBBBBBBBB")
 
         if attackCheck == False and moveCheck: # moves with no attacks
-            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                    (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(moveToCoords), str(False), None, None, None, None, str(False), None, None))
-            self.conn.commit()
             img = eval("self." # TODO: send to new method
                 + heldPiece.pieceID[:-1])
             self.canvas.delete(heldPiece.pieceID)
             self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
             heldPiece.move(moveToCoords[0], moveToCoords[1])
-            
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                    (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(False), None, None, None, None, str(False), None))
+            self.conn.commit()
         if moveCheck and attackCheck: # moves with attacks
-            
-            #Right Here
-            i = 0
-            self.canvas.after(0, self.dice_roll_animation, i, self.rand_dice())
-            
-            #self.canvas.tag_raise("dice" + str(Piece.diceVal))
+            self.canvas.tag_raise("dice" + str(Piece.diceVal))
             pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, False)
-            #self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            #                    (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None))
             if b:
-                self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None, str(False)))
                 img = eval("self." # TODO: send to new method
                     + heldPiece.pieceID[:-1])
                 gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
@@ -433,38 +456,22 @@ class CHESSBOARD:
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 self.add_piece(img, tuple(moveToCoords), str(heldPiece.pieceID))
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, False)
-            elif heldPiece.oneAway == False:
-                self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None, str(True)))
-                img = eval("self." # TODO: send to new method
-                    + heldPiece.pieceID[:-1])
-                gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
-                
-                self.canvas.delete(heldPiece.pieceID)
-                self.add_piece(img, heldPiece.closestMove, str(heldPiece.pieceID))
-            elif heldPiece.oneAway:
-                self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(heldPiece.location), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None, str(True)))
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(moveToCoords), str(True), Piece.diceVal, pieceAttackedID, None, None, str(False), None))
             self.conn.commit()
-            
-            
             
         if moveCheck == False and attackCheck: #rook attack from afar
             b = heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], False, True)
             pieceAttackedID = Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID
             if b:
-                self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(self.locationLock), str(True), Piece.diceVal, pieceAttackedID, None, None, str(True), None, str(False)))
                 gimg = eval("self." + Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID[:-1])
                 self.graveyard(gimg, Piece.chessboard[moveToCoords[0]][moveToCoords[1]])
                 self.canvas.delete(Piece.chessboard[moveToCoords[0]][moveToCoords[1]].pieceID)
                 #Piece.chessboard[moveToCoords[0]][moveToCoords[1]].kill_piece()
                 heldPiece.capture(Piece.chessboard[moveToCoords[0]][moveToCoords[1]], True, True)
-            else:
-                self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                (heldPiece.pieceID, str(heldPiece.corps), str(heldPiece.location), str(self.locationLock), str(True), Piece.diceVal, pieceAttackedID, None, None, str(True), None, str(True)))
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                (heldPiece.pieceID, str(heldPiece.corps), str(self.locationLock), str(self.locationLock), str(True), Piece.diceVal, pieceAttackedID, None, None, str(True), None))
             self.conn.commit()
-
         #print(Piece.chessboard)
         self.turn_forward(heldPiece)
         
@@ -487,23 +494,9 @@ class CHESSBOARD:
             self.canvas.tag_raise("corpsb1r")
             self.canvas.tag_raise("corpsb2r")
             self.canvas.tag_raise("corpsb3r")
-            self.gameOverFlag = True
-            return
 
         
         self.locationLockedIn = False
-        
-    def dice_roll_animation(self, i, x):
-        self.canvas.tag_raise("dice" + str(self.rand_dice()))
-        i += 1
-        if i < 12:
-            y = self.rand_dice()
-            while y == x:
-                y = self.rand_dice()
-            self.canvas.after(50 , self.dice_roll_animation, i, y)
-        else:
-            self.canvas.tag_raise("dice" + str(Piece.diceVal))
-        return
 
     def bishop_death(self, piece):
         x, y = 0, 0
@@ -574,46 +567,26 @@ class CHESSBOARD:
             self.change_active_status(pieceObject.team * -1, pieceObject.corps, True)
             self.reset_corps_inidcator(pieceObject.team * -1)
             self.ai_function_continuous()
-            self.canvas.after(0, self.turn_change_animation, 0, pieceObject.team * -1)
          
         self.history_box_text()
-        
-        
-    def turn_change_animation(self, i, team):
-        #def highlight(htag, chessboard, yBoard, xBoard, color):
-        if i == 0:
-            for row in range(8):
-                for col in range(8):
-                    if Piece.chessboard[row][col]:
-                        if Piece.chessboard[row][col].team == team:
-                            highlight("hlight", self, row, col, self.color4)               
-        if i == 1:
-            self.canvas.delete("hlight")
-        if i >= 2:
-            return
-        self.canvas.after(75, self.turn_change_animation, i+1, team)
-        
         
     def history_box_text(self):
         self.canvas.delete("HistoryText")
         displayText = ""
         turnOverBool = False
+        Row = np.array(["1","2","3","4","5","6","7","8"])
+        Column = np.array(["A","B","C","D","E","F","G","H"])
         for i in range (1, 11):
             try:
                 lastEntry = self.cursor.execute('select * from HISTORY').fetchall()[-1 * i]
                 #print(lastEntry)
-                #displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked and succeeded. Movement: " + lastEntry[2] + " to " + lastEntry[3]
-                #displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked and failed! Movement: " + lastEntry[2] + " to " + lastEntry[3]
-
                 
                 if lastEntry[0] == None:
                     displayText = "Turn over"
                 if lastEntry[3] and lastEntry[4] == str(False) and lastEntry[7] == None and lastEntry[8] == None:
-                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
-                if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(False):
-                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " killed " + lastEntry[6] + " with a " + str(lastEntry[5]) + ". Movement: " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
-                if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(True):
-                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + ", failing! Movement: " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " moved from " +  lastEntry[2]+ " to " + lastEntry[3]                       
+                if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None:
+                    displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + " roll on " + lastEntry[3] + " from " + lastEntry[2]
                 if lastEntry[8] == str(True):
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " passed their turn"
                 if lastEntry[9] == str(True):
@@ -621,30 +594,21 @@ class CHESSBOARD:
                 if lastEntry[7] != None:
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " transfered to corps " + lastEntry[7]
                 if "wk1" in Piece.graveyard:
-                    displayText2 = "Game over! Black wins."
+                    displayText = "Game over! Black wins."
                 if "bk1" in Piece.graveyard:
-                    displayText2 = "Game over! White wins."
+                    displayText = "Game over! White wins."
                 self.canvas.create_text(530,285 + (i * 30),fill="black",font="Times 10",anchor="w",
                                         text=displayText, tag="HistoryText")
-                
-                if (i == 1 and not "Turn over" in displayText and not "Game over!" in displayText):
+                if (i == 1 and not "Turn over" in displayText):
+                    #print("\t\tDisplay text: ", displayText)
                     self.historyArray.append(displayText)
-                #elif (i == 1 and "Turn over" in displayText or "Game over!" in displayText):
-                #    self.lastDisplayTest = displayText
-                #    turnOverBool = True
-                elif (i == 1):
-                    if "Turn over" in displayText:
-                        self.lastDisplayTest = displayText
-                        turnOverBool = True
-                    if "Game over!" in displayText:
-                        self.lastDisplayTest = displayText
-                        turnOverBool = True
-                if (i == 2 and turnOverBool == True and self.gameOverFlag == False):
+                elif (i == 1 and "Turn over" in displayText):
+                    self.lastDisplayTest = displayText
+                    turnOverBool = True
+                if (i == 2 and turnOverBool == True):
                     self.historyArray.append(displayText)
                     self.historyArray.append(self.lastDisplayTest)
-                if (i == 2 and turnOverBool == True and self.gameOverFlag == True):
-                    self.historyArray.append(self.lastDisplayTest)
-                    self.historyArray.append(displayText2)
+                    #print("\t\t\t" + displayText)
                     
                 
                 # Game over overwrites everything here, maybe fix
@@ -694,8 +658,8 @@ class CHESSBOARD:
         if "bb2" in Piece.graveyard:
             self.canvas.delete("corpsb3g")
             self.canvas.tag_raise("corpsw3r")
-        self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                (None, None, None, None, None, None, None, None, None, None, str(True), None))
+        self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (None, None, None, None, None, None, None, None, None, None, str(True)))
         self.conn.commit()
 
     def rules_window(self):
@@ -713,15 +677,15 @@ class CHESSBOARD:
         
     def pass_turn(self):
         if(self.locationLockedIn):
-            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                                    (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID, str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps), None, None, None, None, None, None, str(True), None, None, None))
+            self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                    (Piece.chessboard[self.locationLock[0]][self.locationLock[1]].pieceID, str(Piece.chessboard[self.locationLock[0]][self.locationLock[1]].corps), None, None, None, None, None, None, str(True), None, None))
             self.conn.commit()
             self.turn_forward(Piece.chessboard[self.locationLock[0]][self.locationLock[1]])
         return
     
     def transfer_action(self, corpsToMoveTo, locLockX, locLockY, top):
-        self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                        (Piece.chessboard[locLockX][locLockY].pieceID, str(Piece.chessboard[locLockX][locLockY].corps), None, None, None, None, None, str(corpsToMoveTo), None, None, None, None))
+        self.cursor.execute("INSERT INTO HISTORY VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                        (Piece.chessboard[locLockX][locLockY].pieceID, str(Piece.chessboard[locLockX][locLockY].corps), None, None, None, None, None, str(corpsToMoveTo), None, None, None))
         self.conn.commit()
         self.turn_forward(Piece.chessboard[locLockX][locLockY])
         Piece.chessboard[locLockX][locLockY].corps = corpsToMoveTo
@@ -786,7 +750,21 @@ class CHESSBOARD:
         except Exception as e:
             print(e)
         return
+   
+    def load_game_pieces(self):
+       for col in range(8):
+           for row in range(8):
+               if Piece.chessboard[col][row]:
+                   self.canvas.delete(Piece.chessboard[col][row].pieceID)
+                   x = Piece.chessboard[col][row]
+                   ID = eval("self." + Piece.chessboard[col][row].pieceID[:-1])
+                   print(ID)
+                   self.add_piece(ID, tuple(x.location), x.pieceID)
 
+    
+        
+    
+           
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
         ((xBoard) * 64) + chessboard.dim_square, ((yBoard + 1) * 64) + chessboard.dim_square + 35, 
@@ -817,7 +795,7 @@ def highlight_corps(chessboard, yBoard, xBoard):
                         if corps == 1: chessboard.canvas.tag_raise("corpsb1y")
                         if corps == 2: chessboard.canvas.tag_raise("corpsb2y")
                         if corps == 3: chessboard.canvas.tag_raise("corpsb3y")
-    
+
 def on_click(event, chessboard):
     chessboard.canvas.delete("move_locations")
     chessboard.canvas.delete("piece_selected")
@@ -829,6 +807,7 @@ def on_click(event, chessboard):
             return
     except:
         return
+    
     if Piece.chessboard[yLoc][xLoc] and chessboard.locationLockedIn == False and Piece.chessboard[yLoc][xLoc].active == True:
         highlight("piece_selected", chessboard, yLoc, xLoc, chessboard.color3)
         chessboard.locationLockedIn = True
@@ -836,6 +815,7 @@ def on_click(event, chessboard):
         chessboard.piece_select(Piece.chessboard[yLoc][xLoc].location, chessboard)
         # chessboard.canvas.delete("copsHlight")      # typo?
         return
+    
     if chessboard.locationLockedIn:
         # chessboard.piece_move([yLoc, xLoc])
         chessboard.piece_move([yLoc, xLoc], Piece.chessboard[chessboard.locationLock[0]][chessboard.locationLock[1]])
@@ -893,12 +873,19 @@ def main():
 
     def restart():
         os.execl(sys.executable, sys.executable, *sys.argv)
-
-    def load():
-        pass
-
+    
+ 
+    
     def save():
-        pass
+           an_array = np.array(Piece.chessboard)
+           np.save("sample.npy", an_array)   
+   
+
+
+
+          # print(Piece.chessboard)
+        
+       #
 
     def credit():
         pass
@@ -918,12 +905,24 @@ def main():
             chessboard.conn.commit
         except:
             print("No table")
-        table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECEID, CORPS, PIECEFROM, PIECETO, ATTACKORNO, DICE, ATTACKEDPIECE, TRANSFERTO, PASS, ROOKEXCEPTION, NEXTTURN, ATTACKFAILED);"""
+        table = """CREATE TABLE IF NOT EXISTS HISTORY(PIECEID, CORPS, PIECEFROM, PIECETO, ATTACKORNO, DICE, ATTACKEDPIECE, TRANSFERTO, PASS, ROOKEXCEPTION, NEXTTURN);"""
         chessboard.cursor.execute(table)
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
+        
+       
+        def load(chessboard): 
+            
+           Piece.chessboard = np.delete(Piece.chessboard, [0,1,2,3,4,5,6,7], axis=0)
+           Piece.chessboard = np.delete(Piece.chessboard, [0,1,2,3,4,5,6,7], axis=1)
+           Piece.chessboard = np.load("sample.npy", allow_pickle=True)
+           chessboard.load_game_pieces()
+        
+            
+          
 
+          
         # assistive
         def white_ai():
             '''
@@ -1103,8 +1102,8 @@ def main():
         y = 80
   
         tk.Button(navRoot, text="Restart", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0, command=restart).place(x=25, y=y)
-        tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command =save).place(x=25, y=115) 
-        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=load).place(x=25, y=150)
+        tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command = save).place(x=25, y=115) 
+        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command= lambda: load(chessboard)).place(x=25, y=150)
         tk.Button(navRoot, text="About", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=credit).place(x=25, y=185)
         tk.Button(navRoot, text="Exit", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=root.quit).place(x=25, y=220)
        
@@ -1116,12 +1115,10 @@ def main():
                              
         root.mainloop()
 
-    endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
+    endSplash = Button(window, text="START GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
     endSplash.place(x=500, y=295)
 
-    endSplash1 = Button(window, text="LOAD GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15,command=load, borderwidth=2)
-    endSplash1.place(x=500, y=375)
-
+    
     endSplash2 = Button(window, text="EXIT", background ="#58636F", fg ="#33B5E5", height = 3,width=15,borderwidth=2, command=window.quit)
     endSplash2.place(x=500, y=455)
 
