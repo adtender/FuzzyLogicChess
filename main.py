@@ -613,7 +613,7 @@ class CHESSBOARD:
                 if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(False):
                     displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " killed " + lastEntry[6] + " with a " + str(lastEntry[5]) + ". Movement: " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
                 if lastEntry[3] and lastEntry[4] == str(True) and lastEntry[7] == None and lastEntry[8] == None and lastEntry[11] == str(True):
-                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + ", failing! Movement: " + lastEntry[2] + " to " + lastEntry[3]
+                    displayText = "Corps " + lastEntry[1] + "'s " + lastEntry[0] + " attacked " + lastEntry[6] + " with a " + str(lastEntry[5]) + ", failing! Movement: " + self.numNum_LetterNum(lastEntry[2]) + " to " + self.numNum_LetterNum(lastEntry[3])
                 if lastEntry[8] == str(True):
                     displayText = "Piece " + lastEntry[0] + " of corps " + lastEntry[1] + " passed their turn"
                 if lastEntry[9] == str(True):

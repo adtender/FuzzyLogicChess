@@ -237,7 +237,7 @@ class Piece:
             if shouldUpdate == True:
                 defender.replace_piece(self)
         
-        elif(self.pieceType != 'p'):
+        else:
             overlapMoves = []
             self.oneAway = False
             
