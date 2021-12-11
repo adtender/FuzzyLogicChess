@@ -12,6 +12,8 @@ from pieces import Piece
 from chessAI import ChessAI, RandomAI
 from data.misc.tkinter_custom_button import TkinterCustomButton
 import sys
+from tkinter import simpledialog
+import pickle
 
 class CHESSBOARD:
     x1, y1 = None, None
@@ -51,6 +53,7 @@ class CHESSBOARD:
         self.corps_rectangles()
         self.init_dice()
         self.history_box()
+        self.savedName = ''
 
     def draw_board(self):
         intCheck = 0
@@ -786,6 +789,16 @@ class CHESSBOARD:
         except Exception as e:
             print(e)
         return
+    
+    def load_game_pieces(self):
+        for col in range(8):
+                for row in range(8):
+                    if Piece.chessboard[col][row]:
+                        self.canvas.delete(Piece.chessboard[col][row].pieceID)
+                        x = Piece.chessboard[col][row]
+                        ID = eval("self." + Piece.chessboard[col][row].pieceID[:-1])
+                        print(ID)
+                        self.add_piece(ID, tuple(x.location), x.pieceID)
 
 def highlight(htag, chessboard, yBoard, xBoard, color):
     chessboard.canvas.create_rectangle(((xBoard) * 64) +4, ((yBoard + 1) * 64) + 37, 
@@ -882,6 +895,7 @@ def motion(event, chessboard): # creates a unique yellow tile over the currently
 # without extending the canvas
 
 def main():
+    
     window = Tk()
     window.geometry("1200x634+400+0")
     window.title("Fuzzy-Logic Medieval Chess")
@@ -894,11 +908,9 @@ def main():
     def restart():
         os.execl(sys.executable, sys.executable, *sys.argv)
 
-    def load():
-        pass
-
     def save():
-        pass
+        an_array = np.array(Piece.chessboard)
+        np.save("sample.npy", an_array)   
 
     def credit():
         pass
@@ -923,6 +935,12 @@ def main():
         root.bind("<Motion>", lambda event: motion(event, chessboard))
         root.bind("<Button-1>", lambda event: on_click(event, chessboard))
 
+        def load(chessboard): 
+            
+           Piece.chessboard = np.delete(Piece.chessboard, [0,1,2,3,4,5,6,7], axis=0)
+           Piece.chessboard = np.delete(Piece.chessboard, [0,1,2,3,4,5,6,7], axis=1)
+           Piece.chessboard = np.load("sample.npy", allow_pickle=True)
+           chessboard.load_game_pieces()
 
         # assistive
         def white_ai():
@@ -1104,7 +1122,7 @@ def main():
   
         tk.Button(navRoot, text="Restart", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0, command=restart).place(x=25, y=y)
         tk.Button(navRoot, text="Save", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command =save).place(x=25, y=115) 
-        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=load).place(x=25, y=150)
+        tk.Button(navRoot, text="Load", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command= lambda: load(chessboard)).place(x=25, y=150)
         tk.Button(navRoot, text="About", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=credit).place(x=25, y=185)
         tk.Button(navRoot, text="Exit", font="17",bg="gray17", fg="white", activebackground="gray17", activeforeground="green", bd=0,command=root.quit).place(x=25, y=220)
        
@@ -1116,11 +1134,8 @@ def main():
                              
         root.mainloop()
 
-    endSplash = Button(window, text="NEW GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
+    endSplash = Button(window, text="START GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15, command=start, borderwidth=2)
     endSplash.place(x=500, y=295)
-
-    endSplash1 = Button(window, text="LOAD GAME",background ="#58636F", fg ="#33B5E5", height = 3,width=15,command=load, borderwidth=2)
-    endSplash1.place(x=500, y=375)
 
     endSplash2 = Button(window, text="EXIT", background ="#58636F", fg ="#33B5E5", height = 3,width=15,borderwidth=2, command=window.quit)
     endSplash2.place(x=500, y=455)
